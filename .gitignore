@@ -1,0 +1,17 @@
+# 环境变量与密钥（含 API Key，勿提交）
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 运行产物（每部作品的中间产物与索引）
+data/
+
+# 输入数据与第三方参考代码（版权/密钥，不推送）
+raw_text/
+MoeEye-master/
+
+# IDE
+.idea/

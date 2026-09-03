@@ -1,0 +1,11 @@
+# 离线 Story 管线 V0：核心仅依赖 Python 标准库
+#   - sqlite3（内置，含 FTS5）做本地检索索引
+#   - json / hashlib / pathlib 做数据与缓存
+#
+# 可选依赖（仅当你想用 LLM 抽取 Story Representation 时）：
+#   pip install openai
+#   并配置环境变量 OPENAI_API_KEY（OpenAI 兼容接口）
+#   STORYPIPE_LLM_BASE_URL  默认 https://dashscope.aliyuncs.com/compatible-mode/v1
+#   STORYPIPE_LLM_MODEL     默认 qwen-plus
+#
+# 不装任何东西也能跑通全链路：extractor 自动降级为 mock（summary=首句截断）。
