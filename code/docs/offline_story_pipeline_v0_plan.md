@@ -1,6 +1,7 @@
 # 剧情陪伴 AI：离线 Story Pipeline V0 方案（初版）
 
-> **状态**：初版草案，Story Memory 数据结构与切分方案**尚未冻结**。
+> **状态**：V0 实施中，Story Memory Adapter 契约已冻结；切分与检索排序仍以评测结果迭代。
+> **最近更新（2026-09-04）**：在完成基础 chunk 后加入本地文本向量 side index；检索默认采用“向量优先、FTS/扫描降级”，为 Chatbot 基本接入提供语义召回。
 > **范围**：离线部分。当前以《流浪地球》单篇闭环为目标，跑通后泛化到《赡养人类》《地火》。
 > **配套参考**：`offline_story_pipeline_engineering (1).md`、`offline_story_pipeline_engineering(1).md`、`online_chatbot_engineering(1).md`（三篇均在仓库根目录）。
 
@@ -93,12 +94,13 @@ data/wandering_earth/
   03_extracted/    units_extracted.jsonl：+ summary / characters / locations / key_terms
   04_validated/    人工抽检记录
   05_index/        SQLite FTS5（bm25 over text+summary；metadata 列 work_id/chapter/order）
+                   vectors.db（文本 embedding；可重建 side index）
 ```
 
 ### 4.3 工程要求
 
 - 每个阶段可用 `pipeline.py --work wandering_earth --stage xxx` 单独执行；
-- 高成本 LLM 调用按「input hash + prompt 版本 hash」缓存，支持 force rerun；
+- 高成本 LLM 调用按「抽取器 + 模型 + 端点 + 生成参数 + prompt/state schema + input/state hash」隔离缓存，支持 force rerun；降级结果不进入正常缓存；
 - 产物记录版本：`source_version / pipeline_version / schema_version / prompt_version / embedding_model`；
 - 批处理容错：单请求失败 / JSON parse 失败 / timeout / 断点 resume / failed units retry，不因一处失败重跑全书。
 
@@ -121,7 +123,7 @@ scene unit = 切分基本单位
 
 **候选方案 B**：若检索实验表明细粒度更优，可退化为按自然段聚合为更小 unit（甚至段落级）。
 
-> ⚠️ 按工程文档要求**不锁死**：scene 聚合规则只是候选，跑检索后若 B 更优则换 B；`unit_id`/`order` 的生成方式保持稳定，不受规则切换影响。
+> ⚠️ 按工程文档要求**不锁死**：scene 聚合规则只是候选，跑检索后若 B 更优则换 B。当前 `unit_id` 由 order 生成，规则切换会导致后续 ID 漂移；稳定 ID/旧 ID 映射是后续明确待办，不能把当前 ID 当永久引用。
 
 ### 5.2 ID 与顺序
 
@@ -193,7 +195,8 @@ order         = 全局顺序号（同 unit 序）
 
 ### 6.4 缓存 / 重跑 / 一致性
 
-- cache 键 = `(prompt_version, unit.text, 前序 state 指纹)`：前序不变则命中；
+- cache 命名空间 = `(extractor, model, endpoint, 生成参数, prompt_version, state_schema)`；
+  命名空间内键 = `(prompt_version, unit.text, 前序 state 指纹, 最近原文)`：配置与前序均不变才命中；
   修改某 unit 的抽取会导致其后**整条链缓存失效连锁重抽**（状态流的固有代价）；
 - 每 chapter 结束落一个 state 检查点文件，便于回滚 / 局部重跑；
 - **前向一致性验证**：只跑前 p 个 chunk 的增量结果，必须与整本跑出的前 p 个结果一致。
@@ -201,7 +204,9 @@ order         = 全局顺序号（同 unit 序）
 
 ### 6.5 容错
 
-- 单 unit 失败：降级产出（summary 兜底），**不更新 state**，不污染后续链；记录 degraded 标记；
+- 单 unit 调用/解析失败先重试一次；仍失败才降级产出（summary 兜底），**不更新 state**，不污染后续链；记录 degraded 标记；
+- 降级结果不写正常缓存，避免临时网络或模型格式错误长期污染数据；
+- 章节压缩失败保留 `backdrop_buffer`，不丢弃尚未归档的事件。
 - 出现 degraded 时人工抽检清单会标出，提示重跑该点。
 
 ### 6.6 对 Chatbot 侧的意义（预告）
@@ -212,28 +217,48 @@ order         = 全局顺序号（同 unit 序）
 
 ---
 
-## 7. 存储与索引选型（初版）
+## 7. 存储与索引选型（V0 当前决策）
 
 ### 7.1 方案
 
 ```text
 Source of truth = JSONL（03 阶段产物，可人工核验、可调试、可 diff）
-查询层         = SQLite + FTS5（原文 + summary 双字段 BM25）
-               + metadata 列（work_id / chapter / order）做过滤
+稀疏查询层     = SQLite + FTS5（原文 + summary 双字段 BM25）
+语义查询层     = 本地文本 embedding + SQLite vectors.db
+过滤字段       = work_id / chapter / order
 ```
 
-`search()` 内部逻辑：`order <= max_order` 强过滤 → FTS 打分 → 返回统一 Evidence。
+`search()` 当前逻辑：
+
+```text
+auto: 向量索引可用且与 JSONL 哈希一致
+        → order/chapter 强过滤 → cosine 排序 → Evidence
+      否则
+        → FTS5 BM25 → Python 扫描降级 → Evidence
+```
+
+可通过 `retrieval=vector|fts|auto` 显式选择或比较后端，Chatbot 默认使用 `auto`。显式 `vector` 模式在索引陈旧或模型不可用时直接报错，避免把降级结果误认为向量结果；只有 `auto` 执行透明回退。
 
 ### 7.2 为什么选它（对比）
 
 | 候选 | 结论 |
 |---|---|
 | 纯 JSON/JSONL | 作为 source of truth ✓；作为查询层不够（需自实现检索/过滤） |
-| SQLite + FTS5 | 查询层 ✓；量级（单篇 ~80 unit）完全够，无需向量库 |
-| LanceDB / 向量库 | **V0 不上**。三篇短篇共数百 unit，先验证 BM25 + 结构化过滤是否够；不够再加 dense side index（接口不变，可替换） |
-| 混合形态 | 即本方案（JSONL truth + SQLite index），符合工程文档 6.4 建议 |
+| SQLite + FTS5 | 保留。专有名词和原文精确措辞有效，但实测自然语言因果问题相关性不足 |
+| ChromaDB / ANN 服务 | 当前不上。三篇短篇共数百 unit，没有必要增加独立向量服务和 ANN 复杂度 |
+| 本地 embedding + SQLite 精确扫描 | **V0 采用**。实现语义召回，数百向量直接 cosine 全量扫描足够，易调试、易迁移 |
+| 混合形态 | JSONL truth + FTS side index + dense side index；Adapter 隔离底层差异 |
 
-### 7.3 Provenance
+### 7.3 向量索引规范
+
+- 默认模型：`BAAI/bge-small-zh-v1.5`，可由 `STORYPIPE_EMBEDDING_MODEL` 或 CLI `--embedding-model` 覆盖，并支持直接加载本地模型目录；当前开发机实测优先使用已有的 `BAAI/bge-m3`；
+- 文档向量内容：章节 + summary + characters + locations + key_terms + 原文；
+- bge v1.5 query 使用中文检索指令前缀，文档不加指令；bge-m3 不添加指令前缀；
+- embedding 归一化后存为 float32，查询用余弦相似度；
+- `vectors.db` 记录模型、维度、索引版本、source JSONL SHA-256；source 变化时拒绝使用陈旧索引；
+- 模型首次下载后可以离线运行；向量依赖为可选依赖，不影响核心规则管线。
+
+### 7.4 Provenance
 
 每个 unit 记录 `start_line / end_line` + `raw_text`，检索结果**必然可回原文行号**。
 
@@ -252,6 +277,8 @@ class StoryMemory:
     ) -> list[dict]: ...
     def get_unit(self, work_id: str, unit_id: str) -> dict | None: ...
 ```
+
+Adapter 构造器新增可选 `retrieval="auto"`，不改变上述 `search()` 契约。默认优先向量；索引或本地模型不可用时透明回退。
 
 返回统一 Evidence：
 
@@ -306,6 +333,7 @@ class StoryMemory:
 ```text
 Phase 0  准备：三篇转码规范化 + 人工通读核验
 Phase 1  《流浪地球》单篇闭环：raw → index → search CLI → 验证集
+Phase 1.5 向量 MVP：chunk → embedding → vector search → Chatbot Adapter
 Phase 2  三篇泛化：《赡养人类》《地火》，确认无单篇写死
 Phase 3  冻结设计：检索对比实验后定稿 → STORY_MEMORY_DESIGN.md
 Phase 4  与 Chatbot 联调（Adapter 契约已冻结）
@@ -314,7 +342,9 @@ Phase 4  与 Chatbot 联调（Adapter 契约已冻结）
 ### 10.2 《流浪地球》本篇 DoD
 
 - [ ] raw → index 全链路可重复执行；
+- [ ] vector-index 可重复构建，source 变化时能识别陈旧索引；
 - [ ] 检索可回到正确原文行号；
+- [ ] `auto/vector/fts` 可对比，语义问题的向量召回优于当前 FTS bad case；
 - [ ] 验证集 query 全部命中预期 unit（或记录 bad case 及原因）；
 - [ ] `max_order` 防剧透过滤生效；
 - [ ] 抽取字段人工抽检通过；
@@ -326,7 +356,7 @@ Phase 4  与 Chatbot 联调（Adapter 契约已冻结）
 
 - scene unit 聚合规则：方案 A（长叙述段锚点）vs 方案 B（段落级）——以检索实验定；
 - `chapter / scene unit / retrieval chunk` 三者是否合一（一个可检索单元是否等于一个可展示/可定位单元）；
-- 是否需要 dense retrieval side index / reranker（先跑 BM25 再看）；
+- dense retrieval side index 已加入；是否进一步做 FTS + dense 融合与 reranker，以标注评测集决定；
 - 多作品隔离：独立 table vs 共享 table + `work_id` 过滤（V0 以简单稳定为主）；
 - 未来增量（实时 Story Reader）迁移路径：Adapter 已预留替换空间，具体存储迁移留待设计文档讨论；
 - 《赡养人类》《地火》的切分边界（待读原文后确认是否同样有明显分节）。

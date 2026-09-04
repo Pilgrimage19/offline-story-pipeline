@@ -15,12 +15,19 @@ openai 包为延迟导入：未安装时仅在使用 LLM 抽取时报错。
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 
 from .model import StoryUnit
 
 PROMPT_VERSION = "extract-v0.2-stateful"
+logger = logging.getLogger(__name__)
+
+_TEMPERATURE = 0.2
+_EXTRACT_MAX_TOKENS = 600
+_COMPRESS_MAX_TOKENS = 300
+_MAX_ATTEMPTS = 2
 
 SYSTEM_PROMPT = (
     "你是小说剧情陪伴 AI 的 Story Reader。你按顺序阅读作品的剧情单元，"
@@ -112,11 +119,23 @@ def _parse_json(text: str) -> dict:
 
 def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
     """把 LLM 输出规整成受控字段；summary 缺失时抛 ValueError（由调用方降级）。"""
+    if not isinstance(parsed, dict):
+        raise ValueError("LLM 输出根节点必须是 JSON 对象")
     summary = str(parsed.get("summary", "") or "").strip()
     if not summary:
         raise ValueError("summary 为空")
+    summary = summary[:300]
+    raw_entities = parsed.get("entity_updates", []) or []
+    raw_plotlines = parsed.get("plotline_updates", []) or []
+    raw_refs = parsed.get("context_refs", []) or []
+    if not isinstance(raw_entities, list):
+        raise ValueError("entity_updates 必须是数组")
+    if not isinstance(raw_plotlines, list):
+        raise ValueError("plotline_updates 必须是数组")
+    if not isinstance(raw_refs, list):
+        raise ValueError("context_refs 必须是数组")
     entity_updates = []
-    for e in parsed.get("entity_updates", []) or []:
+    for e in raw_entities[:30]:
         if not isinstance(e, dict):
             continue
         name = str(e.get("name", "")).strip()
@@ -132,19 +151,22 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
             "note": str(e.get("note", "") or "").strip()[:120],
         })
     plotline_updates = []
-    for p in parsed.get("plotline_updates", []) or []:
+    for p in raw_plotlines[:20]:
         if not isinstance(p, dict):
             continue
         title = str(p.get("title", "")).strip()
         if not title:
             continue
+        action = str(p.get("action", "advance")).strip()
+        if action not in {"open", "advance", "close"}:
+            action = "advance"
         plotline_updates.append({
-            "action": str(p.get("action", "advance")).strip()[:10],
+            "action": action,
             "title": title[:60],
             "note": str(p.get("note", "") or "").strip()[:120],
         })
     context_refs = []
-    for r in parsed.get("context_refs", []) or []:
+    for r in raw_refs[:30]:
         if isinstance(r, str) and r.strip():
             context_refs.append(r.strip()[:80])
         elif isinstance(r, dict) and str(r.get("entity", "")).strip():
@@ -153,6 +175,9 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
     recent_event = None
     if isinstance(ev, dict) and str(ev.get("text", "") or "").strip():
         recent_event = {"text": str(ev["text"]).strip()[:120]}
+    elif isinstance(ev, str) and ev.strip():
+        # 部分兼容接口偶尔把对象简化成字符串；这是无歧义的安全修复。
+        recent_event = {"text": ev.strip()[:120]}
     return {
         "summary": summary,
         "entity_updates": entity_updates,
@@ -181,10 +206,23 @@ class LLMExtractor:
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
 
-    def extract_unit(self, unit: StoryUnit, state_view: str = "", recent_raw: str = "") -> dict:
+    def cache_identity(self) -> dict:
+        return {
+            "extractor": self.name,
+            "provider_base_url": self.base_url.rstrip("/"),
+            "model": self.model,
+            "temperature": _TEMPERATURE,
+            "extract_max_tokens": _EXTRACT_MAX_TOKENS,
+            "compress_max_tokens": _COMPRESS_MAX_TOKENS,
+        }
+
+    def _client(self):
         import openai  # 延迟导入
 
-        client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
+        return openai.OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
+
+    def extract_unit(self, unit: StoryUnit, state_view: str = "", recent_raw: str = "") -> dict:
+        client = self._client()
         user_msg = _USER_TEMPLATE.format(
             title=WORK_TITLE(unit.work_id),
             chapter_name=unit.chapter_name,
@@ -193,17 +231,25 @@ class LLMExtractor:
             recent_raw=recent_raw or "（无）",
             text=unit.text,
         )
-        resp = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-            ],
-            temperature=0.2,
-            max_tokens=600,
-        )
-        content = resp.choices[0].message.content or ""
-        return coerce_fields(_parse_json(content), unit)
+        last_error: Exception | None = None
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                resp = client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_msg},
+                    ],
+                    temperature=_TEMPERATURE,
+                    max_tokens=_EXTRACT_MAX_TOKENS,
+                )
+                content = resp.choices[0].message.content or ""
+                return coerce_fields(_parse_json(content), unit)
+            except Exception as e:  # noqa: BLE001 - API 与格式错误统一重试
+                last_error = e
+                if attempt < _MAX_ATTEMPTS:
+                    logger.warning("unit %s LLM 调用/解析失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
+        raise RuntimeError(f"LLM 抽取连续 {_MAX_ATTEMPTS} 次失败: {last_error}") from last_error
 
     def compress_backdrop(
         self,
@@ -213,24 +259,33 @@ class LLMExtractor:
         buffer_events: list[dict],
     ) -> str:
         """章节压缩：buffer 事件 + 旧 backdrop -> 新 backdrop（纯文本）。"""
-        import openai  # 延迟导入
-
         events = "\n".join(f"@{e.get('order')} {e.get('text','')}" for e in buffer_events)
         user_msg = _COMPRESS_PROMPT.format(
             backdrop=backdrop or "（无）",
             events=events or "（无）",
         )
-        client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
-        resp = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "你是小说剧情 Reader 的章节归档器，输出要简洁。"},
-                {"role": "user", "content": user_msg},
-            ],
-            temperature=0.2,
-            max_tokens=300,
-        )
-        return (resp.choices[0].message.content or "").strip()
+        client = self._client()
+        last_error: Exception | None = None
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                resp = client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "你是小说剧情 Reader 的章节归档器，输出要简洁。"},
+                        {"role": "user", "content": user_msg},
+                    ],
+                    temperature=_TEMPERATURE,
+                    max_tokens=_COMPRESS_MAX_TOKENS,
+                )
+                content = (resp.choices[0].message.content or "").strip()
+                if not content:
+                    raise ValueError("章节压缩结果为空")
+                return content
+            except Exception as e:  # noqa: BLE001 - API 与空响应统一重试
+                last_error = e
+                if attempt < _MAX_ATTEMPTS:
+                    logger.warning("chapter %s 压缩失败，第 %s 次重试: %s", chapter_name, attempt, e)
+        raise RuntimeError(f"章节压缩连续 {_MAX_ATTEMPTS} 次失败: {last_error}") from last_error
 
 
 def WORK_TITLE(work_id: str) -> str:

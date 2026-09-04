@@ -1,0 +1,2 @@
+# 可选：本地中文语义向量检索。首次建索引会下载配置的 embedding 模型。
+sentence-transformers>=3,<6

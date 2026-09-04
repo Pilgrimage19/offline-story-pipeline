@@ -27,7 +27,7 @@ from .model import StoryUnit, load_units, save_json, save_units
 
 logger = logging.getLogger(__name__)
 
-_CACHE_VERSION_FILE = "_prompt_version.txt"
+_CACHE_IDENTITY_FILE = "_identity.json"
 
 
 class UnitExtractor(Protocol):
@@ -50,6 +50,9 @@ class MockExtractor:
 
     name = "mock"
 
+    def cache_identity(self) -> dict:
+        return {"extractor": self.name, "implementation": "fallback-first-sentence-v1"}
+
     def extract_unit(self, unit: StoryUnit, state_view: str = "", recent_raw: str = "") -> dict:
         fields = _fallback_fields(unit)
         return fields
@@ -62,9 +65,18 @@ class MockExtractor:
 
 
 class ResultCache:
-    def __init__(self, cache_dir: Path) -> None:
-        self.cache_dir = Path(cache_dir)
+    def __init__(self, cache_root: Path, identity: dict) -> None:
+        self.identity = identity
+        identity_json = json.dumps(identity, ensure_ascii=False, sort_keys=True)
+        namespace = self.digest(identity_json)[:16]
+        self.cache_dir = Path(cache_root) / namespace
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        marker = self.cache_dir / _CACHE_IDENTITY_FILE
+        if not marker.exists():
+            marker.write_text(
+                json.dumps(identity, ensure_ascii=False, indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
 
     @staticmethod
     def digest(*parts: str) -> str:
@@ -73,15 +85,6 @@ class ResultCache:
 
     def chain_key(self, prompt_version: str, state_fp: str, text: str, prev_texts: list[str]) -> str:
         return self.digest(prompt_version, state_fp, text, *prev_texts)
-
-    def ensure_version(self, prompt_version: str) -> None:
-        """prompt 版本升级时清空旧缓存（保留版本标记）。"""
-        marker = self.cache_dir / _CACHE_VERSION_FILE
-        old = marker.read_text(encoding="utf-8").strip() if marker.exists() else None
-        if old != prompt_version:
-            for p in self.cache_dir.glob("*.json"):
-                p.unlink(missing_ok=True)
-            marker.write_text(prompt_version, encoding="utf-8")
 
     def get(self, key: str) -> dict | None:
         p = self.cache_dir / f"{key}.json"
@@ -96,6 +99,17 @@ class ResultCache:
     def put(self, key: str, fields: dict) -> None:
         with open(self.cache_dir / f"{key}.json", "w", encoding="utf-8") as f:
             json.dump(fields, f, ensure_ascii=False)
+
+
+def _cache_identity(extractor: UnitExtractor) -> dict:
+    """返回会影响抽取结果的配置；任何变化都会进入独立缓存命名空间。"""
+    identity_fn = getattr(extractor, "cache_identity", None)
+    specific = identity_fn() if callable(identity_fn) else {"extractor": extractor.name}
+    return {
+        "prompt_version": PROMPT_VERSION,
+        "state_schema_version": state_mod.STATE_SCHEMA_VERSION,
+        **specific,
+    }
 
 
 def make_extractor() -> UnitExtractor:
@@ -117,10 +131,10 @@ def _compress_chapter(
     chapter_name: str,
     state: dict,
     stats: dict,
-) -> None:
-    """章节边界：backdrop_buffer -> backdrop（带缓存），并返回是否执行。"""
+) -> bool:
+    """章节边界：backdrop_buffer -> backdrop。失败时保留 buffer，返回 False。"""
     if not state.get("backdrop_buffer"):
-        return
+        return True
     fp = state_mod.fingerprint(state)
     key = cache.digest(PROMPT_VERSION, "compress", chapter_name, fp)
     hit = cache.get(key)
@@ -133,12 +147,13 @@ def _compress_chapter(
                 work_id, chapter_name, state.get("backdrop", ""), state.get("backdrop_buffer", [])
             )
         except Exception as e:  # noqa: BLE001
-            logger.warning("chapter %s 压缩失败（%s），丢弃 buffer", chapter_name, e)
-            compressed = ""
+            logger.warning("chapter %s 压缩失败（%s），保留 buffer", chapter_name, e)
+            return False
         compressed = (compressed or "")[: state_mod.BACKDROP_MAX_CHARS]
         cache.put(key, {"backdrop": compressed})
         stats["compress_fresh"] += 1
     state_mod.archive_buffer(state, compressed)
+    return True
 
 
 def _checkpoint(paths: WorkPaths, state: dict, chapter_idx: int) -> None:
@@ -168,8 +183,8 @@ def run_chain(
         raise ValueError(f"{work_id}: units.jsonl 为空")
 
     n = len(all_units) if limit is None else max(0, min(int(limit), len(all_units)))
-    cache = ResultCache(paths.extracted_dir / "cache")
-    cache.ensure_version(PROMPT_VERSION)
+    cache_identity = _cache_identity(extractor)
+    cache = ResultCache(paths.extracted_dir / "cache", cache_identity)
 
     state = state_mod.new_state(work_id)
     stats = {
@@ -186,7 +201,9 @@ def run_chain(
     for idx in range(n):
         u = all_units[idx]
         if prev_chapter is not None and u.chapter_idx != prev_chapter:
-            _compress_chapter(cache, extractor, work_id, u.chapter_name, state, stats)
+            previous_chapter_name = processed[-1].chapter_name
+            _compress_chapter(cache, extractor, work_id, previous_chapter_name, state, stats)
+            processed[-1].state_snapshot = state_mod.clone(state)
             _checkpoint(paths, state, prev_chapter)
         prev_chapter = u.chapter_idx
 
@@ -209,7 +226,9 @@ def run_chain(
                 stats["degraded"] += 1
             if degraded:
                 fields["degraded"] = True
-            cache.put(key, fields)
+            # 临时 API/解析错误产生的降级结果不能污染正常缓存。
+            if not degraded:
+                cache.put(key, fields)
             stats["fresh"] += 1
         degraded = bool(fields.get("degraded", False))
 
@@ -241,8 +260,13 @@ def run_chain(
         u.state_snapshot = state_mod.clone(state)
         processed.append(u)
 
-    if prev_chapter is not None:
+    # limit 停在章节中间时不做伪造的“章节末压缩”；真实章节末或全书末才压缩。
+    ends_at_chapter_boundary = n > 0 and (
+        n == len(all_units) or all_units[n].chapter_idx != all_units[n - 1].chapter_idx
+    )
+    if prev_chapter is not None and ends_at_chapter_boundary:
         _compress_chapter(cache, extractor, work_id, processed[-1].chapter_name, state, stats)
+        processed[-1].state_snapshot = state_mod.clone(state)
         _checkpoint(paths, state, prev_chapter)
 
     return processed, state, stats
@@ -267,6 +291,7 @@ def extract_work(
         "pipeline_version": PIPELINE_VERSION,
         "prompt_version": PROMPT_VERSION,
         "extractor": extractor.name,
+        "cache_identity": _cache_identity(extractor),
         "unit_count": len(units),
         **stats,
         "final_state_fp": state_mod.fingerprint(state),

@@ -3,7 +3,8 @@
 读取路径：
     source of truth : data/<work_id>/03_extracted/units_extracted.jsonl（回原文）
     检索索引        : data/<work_id>/05_index/story.db（SQLite FTS5, BM25）
-索引缺失或 FTS5 不可用时，自动退化为 Python 纯扫描打分（同策略），
+    向量索引        : data/<work_id>/05_index/vectors.db（本地文本 embedding）
+默认优先向量检索；索引/依赖缺失时自动退化到 FTS5，再退化为 Python 扫描，
 保证 pipeline 未建索引也能用；接口行为不变。
 
 用法：
@@ -18,17 +19,28 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
-from storypipe.config import DATA_ROOT_DEFAULT, WORK_META
+from storypipe.config import DATA_ROOT_DEFAULT, WORK_META, WorkPaths
 from storypipe.model import StoryUnit, load_json, load_units
 from storypipe.textutil import content_chars, fts_expr, unique_bigrams
+from storypipe.vector_index import (
+    SentenceTransformerEmbedder,
+    read_vector_meta,
+    search_vector_index,
+    source_file,
+    source_sha256,
+)
 
 from .evidence import StoryEvidence
 
 
 class StoryMemory:
-    def __init__(self, data_root: Path = DATA_ROOT_DEFAULT) -> None:
+    def __init__(self, data_root: Path = DATA_ROOT_DEFAULT, retrieval: str = "auto") -> None:
+        if retrieval not in {"auto", "vector", "fts"}:
+            raise ValueError("retrieval 必须是 auto、vector 或 fts")
         self.data_root = Path(data_root)
+        self.retrieval = retrieval
         self._units_cache: dict[str, list[StoryUnit]] = {}
+        self._embedders: dict[str, SentenceTransformerEmbedder] = {}
 
     # ---------- 数据读取 ----------
 
@@ -65,6 +77,7 @@ class StoryMemory:
                 "title": title,
                 "unit_count": len(units),
                 "has_index": (wdir / "05_index" / "story.db").exists(),
+                "has_vector_index": (wdir / "05_index" / "vectors.db").exists(),
             })
         return out
 
@@ -89,7 +102,16 @@ class StoryMemory:
             return []
 
         by_id = {u.unit_id: u for u in units}
-        rows = self._fts_rank(work_id, query, max_order, chapter_filter)
+        rows = None
+        if self.retrieval in {"auto", "vector"}:
+            rows = self._vector_rank(work_id, query, max_order, chapter_filter)
+            if rows is None and self.retrieval == "vector":
+                raise RuntimeError(
+                    "向量索引不可用、已陈旧或本地 embedding 模型无法加载；"
+                    "请重新运行 vector-index，或改用 retrieval='auto'"
+                )
+        if rows is None and self.retrieval in {"auto", "fts"}:
+            rows = self._fts_rank(work_id, query, max_order, chapter_filter)
         if rows is not None:
             scored = [(by_id[uid], float(score)) for uid, score in rows if uid in by_id]
         else:
@@ -105,6 +127,39 @@ class StoryMemory:
         return None
 
     # ---------- 内部实现 ----------
+
+    def _vector_rank(
+        self,
+        work_id: str,
+        query: str,
+        max_order: Optional[int],
+        chapter_filter: str,
+    ) -> Optional[list[tuple[str, float]]]:
+        db = self.data_root / work_id / "05_index" / "vectors.db"
+        meta = read_vector_meta(db)
+        if not meta:
+            return None
+        paths = WorkPaths(self.data_root, work_id)
+        src = source_file(paths)
+        if not src.exists() or meta.get("source_sha256") != source_sha256(src):
+            return None  # source of truth 已变化，拒绝使用陈旧向量
+        model = str(meta.get("model", ""))
+        if not model:
+            return None
+        try:
+            if model not in self._embedders:
+                self._embedders[model] = SentenceTransformerEmbedder(model)
+            query_vectors = self._embedders[model].encode([query], is_query=True)
+            if not query_vectors:
+                return None
+            return search_vector_index(
+                db,
+                query_vectors[0],
+                max_order=max_order,
+                chapter=chapter_filter,
+            )
+        except (RuntimeError, OSError, ValueError, sqlite3.Error):
+            return None
 
     def _to_evidence(self, u: StoryUnit, score: float) -> StoryEvidence:
         return StoryEvidence(

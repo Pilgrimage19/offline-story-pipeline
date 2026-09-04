@@ -36,11 +36,15 @@ def main(argv=None) -> int:
     parser.add_argument("--max-order", type=int, default=None, help="只看 order <= 该值的单元（防剧透）")
     parser.add_argument("--top-k", type=int, default=8, help="返回条数")
     parser.add_argument("--chapter", default=None, help="可选：限定章节（包含匹配）")
+    parser.add_argument(
+        "--retrieval", choices=["auto", "vector", "fts"], default="auto",
+        help="检索后端：auto 优先向量并自动降级（默认）",
+    )
     parser.add_argument("--list", action="store_true", help="列出已处理作品")
     parser.add_argument("--data-root", type=Path, default=DATA_ROOT_DEFAULT)
     args = parser.parse_args(argv)
 
-    sm = StoryMemory(data_root=args.data_root)
+    sm = StoryMemory(data_root=args.data_root, retrieval=args.retrieval)
 
     if args.list or not (args.work and args.query):
         works = sm.list_works()
@@ -49,7 +53,10 @@ def main(argv=None) -> int:
             return 0
         print("已处理作品：")
         for w in works:
-            print(f"  {w['work_id']}  《{w['title']}》  unit={w['unit_count']}  has_index={w['has_index']}")
+            print(
+                f"  {w['work_id']}  《{w['title']}》  unit={w['unit_count']}  "
+                f"has_index={w['has_index']}  has_vector_index={w['has_vector_index']}"
+            )
         if not args.work:
             return 0
 

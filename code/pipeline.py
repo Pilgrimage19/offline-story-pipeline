@@ -20,6 +20,7 @@ import storypipe.index as index_mod
 import storypipe.normalize as normalize_mod
 import storypipe.segment as segment_mod
 import storypipe.validate as validate_mod
+import storypipe.vector_index as vector_index_mod
 from storypipe.config import (
     DATA_ROOT_DEFAULT,
     DEFAULT_SCENE_THRESHOLD,
@@ -29,7 +30,8 @@ from storypipe.config import (
 )
 
 logger = logging.getLogger("pipeline")
-STAGES = ["normalize", "segment", "extract", "index", "validate"]
+CORE_STAGES = ["normalize", "segment", "extract", "index", "validate"]
+STAGES = CORE_STAGES + ["vector-index"]
 
 
 def _setup_console() -> None:
@@ -50,6 +52,10 @@ def _run_stage(stage: str, args: argparse.Namespace) -> dict:
         return extract_mod.extract_work(args.work, args.data_root, force=args.force)
     if stage == "index":
         return index_mod.build_index(args.work, args.data_root)
+    if stage == "vector-index":
+        return vector_index_mod.build_vector_index(
+            args.work, args.data_root, model_name=args.embedding_model
+        )
     if stage == "validate":
         return validate_mod.validate_work(args.work, args.data_root)
     raise ValueError(f"未知阶段: {stage}")
@@ -64,13 +70,18 @@ def main(argv=None) -> int:
     parser.add_argument("--raw-dir", type=Path, default=RAW_DIR_DEFAULT, help="原文目录（默认仓库 raw_text/）")
     parser.add_argument("--scene-threshold", type=int, default=DEFAULT_SCENE_THRESHOLD, help="scene 长叙述段阈值（字）")
     parser.add_argument("--extractor", choices=["auto", "mock", "llm"], default="auto", help="抽取器选择")
+    parser.add_argument(
+        "--embedding-model", default=None,
+        help="向量模型的 Hugging Face ID 或本地目录（仅 vector-index）",
+    )
     parser.add_argument("--force", action="store_true", help="extract 阶段忽略缓存重新抽取")
     args = parser.parse_args(argv)
 
     os.environ["STORYPIPE_EXTRACTOR"] = args.extractor
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
-    stages = STAGES if args.stage == "all" else [args.stage]
+    # 向量索引有可选重型依赖，保持原有 all 为零第三方依赖的核心流程。
+    stages = CORE_STAGES if args.stage == "all" else [args.stage]
     for stage in stages:
         print(f"\n===== [{stage}] {args.work} =====")
         try:

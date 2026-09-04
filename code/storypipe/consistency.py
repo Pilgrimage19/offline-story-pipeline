@@ -36,7 +36,11 @@ def _extractor_matching(meta: dict) -> object:
     if name == "mock":
         return MockExtractor()
     if name == "llm":
-        return LLMExtractor()  # 缺 key 会抛 RuntimeError
+        identity = meta.get("cache_identity", {})
+        return LLMExtractor(
+            base_url=identity.get("provider_base_url"),
+            model=identity.get("model"),
+        )  # API key 仍取当前环境；缺 key 会抛 RuntimeError
     raise RuntimeError(f"未知 extractor: {name!r}")
 
 
