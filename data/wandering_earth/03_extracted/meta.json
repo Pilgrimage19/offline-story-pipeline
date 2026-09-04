@@ -1,0 +1,16 @@
+{
+  "work_id": "wandering_earth",
+  "schema_version": "story-unit@0.1",
+  "state_schema_version": "story-state@0.2",
+  "pipeline_version": "0.1.0",
+  "prompt_version": "extract-v0.2-stateful",
+  "extractor": "mock",
+  "unit_count": 108,
+  "units": 108,
+  "cached": 0,
+  "fresh": 108,
+  "degraded": 0,
+  "compress_cached": 0,
+  "compress_fresh": 4,
+  "final_state_fp": "65eebf4e0011755ac182e105c0a98c9570704407489bee5335cc2bdec9e70226"
+}

@@ -1,0 +1,8 @@
+{
+  "work_id": "wandering_earth",
+  "source_file": "2000-2-流浪地球.txt",
+  "source_bytes": 47181,
+  "source_sha256": "b08fe0cecf1d5f6bab0025cf2e559c422b8574a679defd57fdc547efd905cde6",
+  "encoding": "gb18030",
+  "pipeline_version": "0.1.0"
+}

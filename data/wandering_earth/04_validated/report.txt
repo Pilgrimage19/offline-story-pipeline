@@ -1,0 +1,15 @@
+# wandering_earth 自动校验报告（04_validated）
+
+PASS  order 唯一且从 1 连续: unit 数=108
+PASS  文本无丢失/重复: normalized=23236字 vs units=23236字
+PASS  章节标题全覆盖: 未命中章节: 无
+PASS  provenance 行号合法: 非法单元: 无
+
+按章节单元数:
+
+  上篇 刹车时代: 26
+  下篇 叛乱: 26
+  中篇 逃逸时代: 51
+  流浪时代: 5
+
+抽样人工核验见同目录 spot_check.md（共 108 个单元）

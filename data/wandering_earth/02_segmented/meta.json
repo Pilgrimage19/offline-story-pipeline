@@ -1,0 +1,36 @@
+{
+  "work_id": "wandering_earth",
+  "schema_version": "story-unit@0.1",
+  "pipeline_version": "0.1.0",
+  "rule": "scene_anchor_long_paragraph",
+  "threshold": 80,
+  "unit_count": 108,
+  "chapter_count": 4,
+  "chapters": [
+    {
+      "idx": 1,
+      "chapter": "上篇 刹车时代",
+      "units": 26,
+      "chars": 6268
+    },
+    {
+      "idx": 2,
+      "chapter": "中篇 逃逸时代",
+      "units": 51,
+      "chars": 11396
+    },
+    {
+      "idx": 3,
+      "chapter": "下篇 叛乱",
+      "units": 26,
+      "chars": 4681
+    },
+    {
+      "idx": 4,
+      "chapter": "流浪时代",
+      "units": 5,
+      "chars": 784
+    }
+  ],
+  "warnings": []
+}
