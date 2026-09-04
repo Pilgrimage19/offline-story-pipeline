@@ -94,7 +94,7 @@ data/wandering_earth/
   03_extracted/    units_extracted.jsonl：+ summary / characters / locations / key_terms
   04_validated/    人工抽检记录
   05_index/        SQLite FTS5（bm25 over text+summary；metadata 列 work_id/chapter/order）
-                   vectors.db（文本 embedding；可重建 side index）
+                   vectors.lance（LanceDB 文本 embedding；可重建 side index）
 ```
 
 ### 4.3 工程要求
@@ -224,7 +224,7 @@ order         = 全局顺序号（同 unit 序）
 ```text
 Source of truth = JSONL（03 阶段产物，可人工核验、可调试、可 diff）
 稀疏查询层     = SQLite + FTS5（原文 + summary 双字段 BM25）
-语义查询层     = 本地文本 embedding + SQLite vectors.db
+语义查询层     = 本地文本 embedding + LanceDB vectors.lance
 过滤字段       = work_id / chapter / order
 ```
 
@@ -245,9 +245,9 @@ auto: 向量索引可用且与 JSONL 哈希一致
 |---|---|
 | 纯 JSON/JSONL | 作为 source of truth ✓；作为查询层不够（需自实现检索/过滤） |
 | SQLite + FTS5 | 保留。专有名词和原文精确措辞有效，但实测自然语言因果问题相关性不足 |
-| ChromaDB / ANN 服务 | 当前不上。三篇短篇共数百 unit，没有必要增加独立向量服务和 ANN 复杂度 |
-| 本地 embedding + SQLite 精确扫描 | **V0 采用**。实现语义召回，数百向量直接 cosine 全量扫描足够，易调试、易迁移 |
-| 混合形态 | JSONL truth + FTS side index + dense side index；Adapter 隔离底层差异 |
+| ChromaDB / 独立 ANN 服务 | 当前不上。三篇短篇共数百 unit，不增加独立服务 |
+| LanceDB 本地表 | **V0 采用**。提供专用向量数据库、向量查询和 metadata 过滤；本地目录即可被 Chatbot 打开 |
+| 混合形态 | JSONL truth + FTS side index + LanceDB dense side index；Adapter 隔离底层差异 |
 
 ### 7.3 向量索引规范
 
@@ -255,7 +255,7 @@ auto: 向量索引可用且与 JSONL 哈希一致
 - 文档向量内容：章节 + summary + characters + locations + key_terms + 原文；
 - bge v1.5 query 使用中文检索指令前缀，文档不加指令；bge-m3 不添加指令前缀；
 - embedding 归一化后存为 float32，查询用余弦相似度；
-- `vectors.db` 记录模型、维度、索引版本、source JSONL SHA-256；source 变化时拒绝使用陈旧索引；
+- `vectors.lance` 记录模型、维度、索引版本、source JSONL SHA-256；source 变化时拒绝使用陈旧索引；
 - 模型首次下载后可以离线运行；向量依赖为可选依赖，不影响核心规则管线。
 
 ### 7.4 Provenance

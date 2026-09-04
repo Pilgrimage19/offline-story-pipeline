@@ -1,16 +1,9 @@
-"""文本向量索引：本地 embedding + SQLite 持久化。
-
-向量库只是 source of truth 的可重建 side index。默认使用适合中文检索的
-BAAI/bge-small-zh-v1.5；模型首次使用时由 sentence-transformers 下载，之后可离线运行。
-"""
+"""LanceDB 文本向量索引。"""
 from __future__ import annotations
 
 import hashlib
 import json
-import math
 import os
-import sqlite3
-from array import array
 from pathlib import Path
 from typing import Protocol, Sequence
 
@@ -18,8 +11,9 @@ from .config import WorkPaths
 from .model import StoryUnit, load_units
 
 DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-zh-v1.5"
-VECTOR_DB_NAME = "vectors.db"
-VECTOR_INDEX_VERSION = "story-vector@0.1"
+VECTOR_DB_NAME = "vectors.lance"
+VECTOR_TABLE_NAME = "story_units"
+VECTOR_INDEX_VERSION = "story-vector@0.2-lancedb"
 _QUERY_PREFIX = "为这个句子生成表示以用于检索相关文章："
 
 
@@ -30,7 +24,7 @@ class Embedder(Protocol):
 
 
 class SentenceTransformerEmbedder:
-    """sentence-transformers 的延迟加载包装，避免非向量流程依赖重型包。"""
+    """sentence-transformers 的延迟加载包装，支持模型 ID 或本地目录。"""
 
     def __init__(self, model_name: str | None = None) -> None:
         self.model_name = model_name or os.environ.get(
@@ -44,19 +38,13 @@ class SentenceTransformerEmbedder:
                 f"pip install -r requirements-vector.txt。原始错误: {e}"
             ) from e
         model_path = Path(self.model_name)
-        self._model = SentenceTransformer(
-            self.model_name,
-            local_files_only=model_path.exists(),
-        )
+        self._model = SentenceTransformer(self.model_name, local_files_only=model_path.exists())
 
     def encode(self, texts: Sequence[str], *, is_query: bool = False) -> list[list[float]]:
-        # bge-m3 本身不要求检索指令；bge v1.5 系列查询使用官方推荐中文前缀。
         use_prefix = "bge-m3" not in self.model_name.lower()
         inputs = [(_QUERY_PREFIX + t) if is_query and use_prefix else t for t in texts]
         vectors = self._model.encode(
-            inputs,
-            normalize_embeddings=True,
-            show_progress_bar=len(inputs) > 16,
+            inputs, normalize_embeddings=True, show_progress_bar=len(inputs) > 16
         )
         return [list(map(float, row)) for row in vectors]
 
@@ -71,7 +59,6 @@ def source_sha256(path: Path) -> str:
 
 
 def retrieval_text(unit: StoryUnit) -> str:
-    """组合用于 embedding 的文本；原文仍由 JSONL 回表，不复制为事实源。"""
     parts = [f"章节：{unit.chapter_name}"]
     if unit.summary:
         parts.append(f"摘要：{unit.summary}")
@@ -85,23 +72,8 @@ def retrieval_text(unit: StoryUnit) -> str:
     return "\n".join(parts)
 
 
-def _pack(vector: Sequence[float]) -> bytes:
-    return array("f", vector).tobytes()
-
-
-def _unpack(blob: bytes) -> array:
-    values = array("f")
-    values.frombytes(blob)
-    return values
-
-
-def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    if len(a) != len(b) or not a:
-        return -1.0
-    dot = sum(x * y for x, y in zip(a, b))
-    an = math.sqrt(sum(x * x for x in a))
-    bn = math.sqrt(sum(y * y for y in b))
-    return dot / (an * bn) if an and bn else -1.0
+def _meta_path(db_path: Path) -> Path:
+    return db_path / "_meta.json"
 
 
 def build_vector_index(
@@ -119,7 +91,6 @@ def build_vector_index(
     units = load_units(src)
     if not units:
         raise ValueError(f"{work_id}: 无单元可建立向量索引")
-
     encoder = embedder or SentenceTransformerEmbedder(model_name)
     vectors = encoder.encode([retrieval_text(u) for u in units])
     if len(vectors) != len(units) or not vectors or not vectors[0]:
@@ -127,64 +98,34 @@ def build_vector_index(
     dim = len(vectors[0])
     if any(len(v) != dim for v in vectors):
         raise ValueError("embedding 维度不一致")
-
-    db_path = paths.index_dir / VECTOR_DB_NAME
-    conn = sqlite3.connect(str(db_path))
     try:
-        conn.executescript(
-            """
-            DROP TABLE IF EXISTS vector_units;
-            DROP TABLE IF EXISTS vector_meta;
-            CREATE TABLE vector_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-            CREATE TABLE vector_units (
-                unit_id TEXT PRIMARY KEY,
-                ord INTEGER NOT NULL,
-                chapter TEXT NOT NULL,
-                embedding BLOB NOT NULL
-            );
-            CREATE INDEX idx_vector_units_order ON vector_units(ord);
-            """
-        )
-        meta = {
-            "index_version": VECTOR_INDEX_VERSION,
-            "model": encoder.model_name,
-            "dimension": dim,
-            "source_file": src.name,
-            "source_sha256": source_sha256(src),
-            "unit_count": len(units),
-        }
-        conn.executemany(
-            "INSERT INTO vector_meta(key, value) VALUES (?, ?)",
-            [(k, json.dumps(v, ensure_ascii=False)) for k, v in meta.items()],
-        )
-        conn.executemany(
-            "INSERT INTO vector_units(unit_id, ord, chapter, embedding) VALUES (?, ?, ?, ?)",
-            [(u.unit_id, u.order, u.chapter_name, _pack(v)) for u, v in zip(units, vectors)],
-        )
-        conn.commit()
-    finally:
-        conn.close()
-    return {
-        "work_id": work_id,
-        "units": len(units),
-        "model": encoder.model_name,
-        "dimension": dim,
-        "db_path": str(db_path),
-        "source": src.name,
+        import lancedb
+    except ImportError as e:
+        raise RuntimeError("LanceDB 未安装；请运行 pip install -r requirements-vector.txt") from e
+    db_path = paths.index_dir / VECTOR_DB_NAME
+    db_path.mkdir(parents=True, exist_ok=True)
+    db = lancedb.connect(str(db_path))
+    rows = [
+        {"unit_id": u.unit_id, "ord": int(u.order), "chapter": u.chapter_name,
+         "vector": list(map(float, v))}
+        for u, v in zip(units, vectors)
+    ]
+    db.create_table(VECTOR_TABLE_NAME, data=rows, mode="overwrite")
+    meta = {
+        "index_version": VECTOR_INDEX_VERSION, "model": encoder.model_name,
+        "dimension": dim, "source_file": src.name,
+        "source_sha256": source_sha256(src), "unit_count": len(units),
+        "table": VECTOR_TABLE_NAME,
     }
+    _meta_path(db_path).write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"work_id": work_id, "units": len(units), "model": encoder.model_name,
+            "dimension": dim, "db_path": str(db_path), "source": src.name}
 
 
 def read_vector_meta(db_path: Path) -> dict:
-    if not db_path.exists():
-        return {}
     try:
-        conn = sqlite3.connect(f"{db_path.as_uri()}?mode=ro", uri=True)
-        try:
-            rows = conn.execute("SELECT key, value FROM vector_meta").fetchall()
-        finally:
-            conn.close()
-        return {key: json.loads(value) for key, value in rows}
-    except (sqlite3.Error, json.JSONDecodeError):
+        return json.loads(_meta_path(db_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
         return {}
 
 
@@ -196,20 +137,22 @@ def search_vector_index(
     chapter: str = "",
     limit: int = 200,
 ) -> list[tuple[str, float]]:
-    """小规模语料直接精确余弦扫描；数百单元无需引入 ANN 服务。"""
-    conn = sqlite3.connect(f"{db_path.as_uri()}?mode=ro", uri=True)
+    """使用 LanceDB 向量查询；where 条件在向量查询阶段执行。"""
     try:
-        sql = "SELECT unit_id, embedding FROM vector_units WHERE 1=1"
-        params: list[object] = []
-        if max_order is not None:
-            sql += " AND ord <= ?"
-            params.append(max_order)
-        if chapter:
-            sql += " AND chapter LIKE ?"
-            params.append(f"%{chapter}%")
-        rows = conn.execute(sql, params).fetchall()
-    finally:
-        conn.close()
-    scored = [(unit_id, _cosine(query_vector, _unpack(blob))) for unit_id, blob in rows]
-    scored.sort(key=lambda item: item[1], reverse=True)
-    return scored[: max(0, limit)]
+        import lancedb
+    except ImportError as e:
+        raise RuntimeError("LanceDB 未安装；请运行 pip install -r requirements-vector.txt") from e
+    db = lancedb.connect(str(db_path))
+    table = db.open_table(VECTOR_TABLE_NAME)
+    query = table.search(list(map(float, query_vector)), query_type="vector").metric("cosine")
+    predicates = []
+    if max_order is not None:
+        predicates.append(f"ord <= {int(max_order)}")
+    if chapter:
+        safe_chapter = chapter.replace("'", "''")
+        predicates.append(f"chapter LIKE '%{safe_chapter}%'")
+    if predicates:
+        query = query.where(" AND ".join(predicates))
+    result = query.limit(max(0, limit)).to_list()
+    # LanceDB 返回 cosine distance（越小越相似）；Adapter 对外统一暴露 similarity score。
+    return [(str(row["unit_id"]), 1.0 - float(row.get("_distance", 1.0))) for row in result]

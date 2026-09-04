@@ -1,0 +1,9 @@
+{
+  "index_version": "story-vector@0.2-lancedb",
+  "model": "D:\\models\\BAAI\\bge-m3",
+  "dimension": 1024,
+  "source_file": "units_extracted.jsonl",
+  "source_sha256": "7b0833bad883d897b3fe0a0a278b812b2f126cb2f2fc46bc5dca0f5e6ce47bec",
+  "unit_count": 108,
+  "table": "story_units"
+}

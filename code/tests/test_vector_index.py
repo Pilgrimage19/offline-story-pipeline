@@ -39,7 +39,7 @@ def test_build_and_search_vector_index_with_progress_filter(tmp_path):
     src = tmp_path / "demo" / "02_segmented" / "units.jsonl"
     save_units(src, units)
     result = build_vector_index("demo", tmp_path, embedder=FakeEmbedder())
-    meta = read_vector_meta(tmp_path / "demo" / "05_index" / "vectors.db")
+    meta = read_vector_meta(tmp_path / "demo" / "05_index" / "vectors.lance")
     assert result["units"] == 3
     assert meta["model"] == "fake-2d"
 
@@ -48,6 +48,7 @@ def test_build_and_search_vector_index_with_progress_filter(tmp_path):
     hits = memory.search("demo", "发动机", max_order=2, top_k=5)
 
     assert hits[0]["unit_id"] == "d-0001"
+    assert hits[0]["score"] > hits[-1]["score"]
     assert all(hit["order"] <= 2 for hit in hits)
 
 

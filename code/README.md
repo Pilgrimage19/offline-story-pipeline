@@ -18,7 +18,7 @@ code/
     extract.py           02 -> 03_extracted（LLM/mock 抽取 + 缓存 + 单单元容错）
     llm.py               LLM 抽取器（OpenAI 兼容接口，可选依赖）
     index.py             03/02 -> 05_index（SQLite FTS5 + BM25，可降级）
-    vector_index.py      03/02 -> 05_index（本地文本 embedding + SQLite 向量）
+    vector_index.py      03/02 -> 05_index（本地文本 embedding + LanceDB）
     validate.py          04_validated（自动校验 + 人工抽检清单）
     model.py             StoryUnit 模型与 JSONL/JSON IO
     textutil.py          query 轻量中文处理（V0 启发式）
@@ -61,7 +61,7 @@ python search_story.py --work wandering_earth --query "前面是不是提过飞�
 - **抽取**：默认 `STORYPIPE_EXTRACTOR=auto` —— 有 `OPENAI_API_KEY` 用 LLM（默认 qwen-plus，可配 `STORYPIPE_LLM_MODEL`/`STORYPIPE_LLM_BASE_URL`），否则降级 mock（summary=首句截断）。缓存按抽取器、模型、端点、prompt/state schema 和生成参数隔离于 `03_extracted/cache/<配置指纹>/`；模型调用或解析失败会重试一次，最终降级结果不会写入正常缓存。`--force` 可忽略缓存。
 - **防剧透**：检索时传 `max_order`（= 用户当前进度 order），过滤在检索层完成；离线侧不维护用户状态。
 - **source of truth**：`03_extracted/units_extracted.jsonl`（原文 + summary + 实体）；`05_index/story.db` 只是检索索引。索引缺失/FTS5 不可用时 Adapter 自动降级为纯扫描，接口不变。
-- **向量检索**：`05_index/vectors.db` 是可重建 side index，默认模型为 `BAAI/bge-small-zh-v1.5`（可用 `STORYPIPE_EMBEDDING_MODEL` 或 `--embedding-model` 修改，也支持本地模型目录）。`StoryMemory(retrieval="auto")` 优先向量，向量缺失、陈旧或依赖不可用时自动回退 FTS/扫描；`max_order` 在读取候选向量前强过滤。
+- **向量检索**：`05_index/vectors.lance` 是可重建的 LanceDB side index，默认模型为 `BAAI/bge-small-zh-v1.5`（可用 `STORYPIPE_EMBEDDING_MODEL` 或 `--embedding-model` 修改，也支持本地模型目录）。`StoryMemory(retrieval="auto")` 优先向量，向量缺失、陈旧或依赖不可用时自动回退 FTS/扫描；`max_order` 在 LanceDB 查询阶段强过滤。
 
 ## 开发测试
 

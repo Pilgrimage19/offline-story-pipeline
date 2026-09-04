@@ -3,7 +3,7 @@
 读取路径：
     source of truth : data/<work_id>/03_extracted/units_extracted.jsonl（回原文）
     检索索引        : data/<work_id>/05_index/story.db（SQLite FTS5, BM25）
-    向量索引        : data/<work_id>/05_index/vectors.db（本地文本 embedding）
+    向量索引        : data/<work_id>/05_index/vectors.lance（LanceDB 本地表）
 默认优先向量检索；索引/依赖缺失时自动退化到 FTS5，再退化为 Python 扫描，
 保证 pipeline 未建索引也能用；接口行为不变。
 
@@ -77,7 +77,7 @@ class StoryMemory:
                 "title": title,
                 "unit_count": len(units),
                 "has_index": (wdir / "05_index" / "story.db").exists(),
-                "has_vector_index": (wdir / "05_index" / "vectors.db").exists(),
+                "has_vector_index": (wdir / "05_index" / "vectors.lance").exists(),
             })
         return out
 
@@ -135,7 +135,7 @@ class StoryMemory:
         max_order: Optional[int],
         chapter_filter: str,
     ) -> Optional[list[tuple[str, float]]]:
-        db = self.data_root / work_id / "05_index" / "vectors.db"
+        db = self.data_root / work_id / "05_index" / "vectors.lance"
         meta = read_vector_meta(db)
         if not meta:
             return None
