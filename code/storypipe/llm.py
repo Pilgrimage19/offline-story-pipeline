@@ -79,6 +79,20 @@ _COMPRESS_PROMPT = """你是小说剧情 Reader 的章节归档器。请把本�
 {events}
 """
 
+_REVIEW_PROMPT = """请校验下面这段小说 chunk 的抽取结果，只依据 chunk 原文和已有故事状态修正错误。
+输出一个 JSON 对象，字段必须只有 summary、entity_updates、plotline_updates、context_refs、recent_event。
+保持 summary 1~2 句；没有内容的数组输出 []；不要解释，不要 Markdown，不要新增原文没有的事实。
+
+已有抽取结果：
+{draft}
+
+当前故事状态：
+{state_view}
+
+当前 chunk 原文：
+{text}
+"""
+
 _FALLBACK_TYPES = {"character", "object", "location"}
 
 
@@ -196,6 +210,7 @@ class LLMExtractor:
         base_url: str | None = None,
         model: str | None = None,
         timeout: float = 90.0,
+        review: bool | None = None,
     ) -> None:
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
         self.base_url = base_url or os.environ.get(
@@ -208,6 +223,9 @@ class LLMExtractor:
             self.max_attempts = max(1, int(os.environ.get("STORYPIPE_LLM_MAX_ATTEMPTS", str(_DEFAULT_MAX_ATTEMPTS))))
         except ValueError:
             self.max_attempts = _DEFAULT_MAX_ATTEMPTS
+        if review is None:
+            review = os.environ.get("STORYPIPE_LLM_REVIEW", "on").lower() not in {"0", "off", "false", "no"}
+        self.review = bool(review)
         self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
@@ -221,6 +239,7 @@ class LLMExtractor:
             "extract_max_tokens": _EXTRACT_MAX_TOKENS,
             "compress_max_tokens": _COMPRESS_MAX_TOKENS,
             "max_attempts": self.max_attempts,
+            "review": self.review,
         }
 
     def _client(self):
@@ -253,12 +272,48 @@ class LLMExtractor:
                 )
                 self._record_usage(resp)
                 content = resp.choices[0].message.content or ""
-                return coerce_fields(_parse_json(content), unit)
+                fields = coerce_fields(_parse_json(content), unit)
+                if self.review:
+                    try:
+                        return self._review_unit(unit, fields, state_view)
+                    except Exception as e:  # review 失败不丢弃已成功的核心抽取
+                        logger.warning("unit %s 复核失败，保留核心抽取结果: %s", unit.unit_id, e)
+                return fields
             except Exception as e:  # noqa: BLE001 - API 与格式错误统一重试
                 last_error = e
                 if attempt < self.max_attempts:
                     logger.warning("unit %s LLM 调用/解析失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
         raise RuntimeError(f"LLM 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
+
+    def _review_unit(self, unit: StoryUnit, draft: dict, state_view: str) -> dict:
+        """第二次调用做轻量复核；复核失败时由调用方保留 draft。"""
+        client = self._client()
+        user_msg = _REVIEW_PROMPT.format(
+            draft=json.dumps(draft, ensure_ascii=False),
+            state_view=state_view or "（无）",
+            text=unit.text,
+        )
+        last_error: Exception | None = None
+        for attempt in range(1, self.max_attempts + 1):
+            try:
+                resp = client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "你是严格的 JSON 抽取结果校验器。"},
+                        {"role": "user", "content": user_msg},
+                    ],
+                    temperature=0,
+                    max_tokens=900,
+                    response_format={"type": "json_object"},
+                )
+                self._record_usage(resp)
+                content = resp.choices[0].message.content or ""
+                return coerce_fields(_parse_json(content), unit)
+            except Exception as e:  # noqa: BLE001
+                last_error = e
+                if attempt < self.max_attempts:
+                    logger.warning("unit %s 复核失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
+        raise RuntimeError(f"复核连续 {self.max_attempts} 次失败: {last_error}") from last_error
 
     def compress_backdrop(
         self,
