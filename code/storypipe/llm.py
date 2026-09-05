@@ -110,7 +110,7 @@ _PLOT_REVIEW_PROMPT = """只检查剧情关系和上下文，不要检查人物�
 _SUMMARY_TASK = """只抽取当前 chunk 的核心剧情。输出 JSON：{{"summary":"1~2句","recent_event":"一句话"}}。只依据原文和状态，不要解释、不要 Markdown。
 状态：{state_view}
 原文：{text}"""
-_ENTITY_TASK = """只抽取当前 chunk 中真实出现的人物、地点、物件及其状态。输出 JSON：{{"entity_updates":[{{"name":"","type":"character|object|location","status":"不超过60字"}}]}}。没有就输出空数组，不要解释。
+_ENTITY_TASK = """只抽取当前 chunk 中真实出现、且后续可能需要引用的人物、地点、物件及其状态；临时环境描述或一次性集合不要作为长期实体，除非原文明确把它当作专名/关键对象。输出 JSON：{{"entity_updates":[{{"name":"","type":"character|object|location","status":"不超过60字"}}]}}。没有就输出空数组，不要解释。
 已有状态：{state_view}
 原文：{text}"""
 _RELATION_TASK = """只抽取当前 chunk 中发生明确变化的剧情关系（新事件开启、已有事件推进或结束）。纯景物/设定描写不要新建剧情线。输出 JSON：{{"plotline_updates":[{{"action":"open|advance|close","title":"","note":"不超过60字"}}],"context_refs":["实体名"]}}。没有明确剧情变化就输出空数组，不要解释。
@@ -118,7 +118,6 @@ _RELATION_TASK = """只抽取当前 chunk 中发生明确变化的剧情关系�
 原文：{text}"""
 
 _FALLBACK_TYPES = {"character", "object", "location"}
-_NON_ENTITY_NAMES = {"户外", "大地", "天空", "世界", "社会", "时代", "车队"}
 
 
 def _first_sentence(text: str, maxlen: int = 60) -> str:
@@ -183,8 +182,6 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
         etype = str(e.get("type", "character")).strip()
         if etype not in _FALLBACK_TYPES:
             etype = "character"
-        if name in _NON_ENTITY_NAMES:
-            continue
         entity_updates.append({
             "name": name[:40],
             "type": etype,
