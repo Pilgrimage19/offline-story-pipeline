@@ -113,11 +113,12 @@ _SUMMARY_TASK = """只抽取当前 chunk 的核心剧情。输出 JSON：{{"summ
 _ENTITY_TASK = """只抽取当前 chunk 中真实出现的人物、地点、物件及其状态。输出 JSON：{{"entity_updates":[{{"name":"","type":"character|object|location","status":"不超过60字"}}]}}。没有就输出空数组，不要解释。
 已有状态：{state_view}
 原文：{text}"""
-_RELATION_TASK = """只抽取当前 chunk 的剧情关系。输出 JSON：{{"plotline_updates":[{{"action":"open|advance|close","title":"","note":"不超过60字"}}],"context_refs":["实体名"]}}。没有就输出空数组，不要解释。
+_RELATION_TASK = """只抽取当前 chunk 中发生明确变化的剧情关系（新事件开启、已有事件推进或结束）。纯景物/设定描写不要新建剧情线。输出 JSON：{{"plotline_updates":[{{"action":"open|advance|close","title":"","note":"不超过60字"}}],"context_refs":["实体名"]}}。没有明确剧情变化就输出空数组，不要解释。
 已有状态：{state_view}
 原文：{text}"""
 
 _FALLBACK_TYPES = {"character", "object", "location"}
+_NON_ENTITY_NAMES = {"户外", "大地", "天空", "世界", "社会", "时代", "车队"}
 
 
 def _first_sentence(text: str, maxlen: int = 60) -> str:
@@ -182,11 +183,13 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
         etype = str(e.get("type", "character")).strip()
         if etype not in _FALLBACK_TYPES:
             etype = "character"
+        if name in _NON_ENTITY_NAMES:
+            continue
         entity_updates.append({
             "name": name[:40],
             "type": etype,
-            "status": str(e.get("status", "") or "").strip()[:120],
-            "note": str(e.get("note", "") or "").strip()[:120],
+            "status": str(e.get("status", "") or "").strip()[:80],
+            "note": str(e.get("note", "") or "").strip()[:80],
         })
     plotline_updates = []
     for p in raw_plotlines[:20]:
@@ -201,7 +204,7 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
         plotline_updates.append({
             "action": action,
             "title": title[:60],
-            "note": str(p.get("note", "") or "").strip()[:120],
+            "note": str(p.get("note", "") or "").strip()[:80],
         })
     context_refs = []
     for r in raw_refs[:30]:
@@ -280,7 +283,14 @@ def apply_review_patch(fields: dict, patch: dict) -> dict:
                 if update["note"]:
                     entity["note"] = update["note"]
     out["entity_updates"] = [e for e in out.get("entity_updates", []) if e.get("name") not in removed]
-    out["plotline_updates"] = out.get("plotline_updates", []) + patch["plotline_fixes"]
+    merged_plotlines = out.get("plotline_updates", []) + patch["plotline_fixes"]
+    seen_plotlines = set()
+    out["plotline_updates"] = []
+    for item in merged_plotlines:
+        key = (item.get("title", ""), item.get("action", ""))
+        if key not in seen_plotlines:
+            seen_plotlines.add(key)
+            out["plotline_updates"].append(item)
     out["context_refs"] = list(dict.fromkeys(out.get("context_refs", []) + patch["context_ref_additions"]))
     return out
 
