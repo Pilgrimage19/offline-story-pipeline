@@ -48,7 +48,7 @@ def test_extract_retries_after_invalid_json(unit, monkeypatch):
             return next(responses)
 
     fake_client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
-    extractor = LLMExtractor(api_key="test", base_url="https://example.invalid", model="test-model", review=False)
+    extractor = LLMExtractor(api_key="test", base_url="https://example.invalid", model="test-model", review=False, multi_task=False)
     monkeypatch.setattr(extractor, "_client", lambda: fake_client)
 
     result = extractor.extract_unit(unit)
@@ -70,7 +70,7 @@ def test_compress_retries_after_empty_response(monkeypatch):
             return next(responses)
 
     fake_client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
-    extractor = LLMExtractor(api_key="test", base_url="https://example.invalid", model="test-model", review=False)
+    extractor = LLMExtractor(api_key="test", base_url="https://example.invalid", model="test-model", review=False, multi_task=False)
     monkeypatch.setattr(extractor, "_client", lambda: fake_client)
 
     result = extractor.compress_backdrop("demo", "第一章", "", [{"order": 1, "text": "事件"}])

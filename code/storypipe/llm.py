@@ -107,6 +107,16 @@ _PLOT_REVIEW_PROMPT = """只检查剧情关系和上下文，不要检查人物�
 {text}
 """
 
+_SUMMARY_TASK = """只抽取当前 chunk 的核心剧情。输出 JSON：{{"summary":"1~2句","recent_event":"一句话"}}。只依据原文和状态，不要解释、不要 Markdown。
+状态：{state_view}
+原文：{text}"""
+_ENTITY_TASK = """只抽取当前 chunk 中真实出现的人物、地点、物件及其状态。输出 JSON：{{"entity_updates":[{{"name":"","type":"character|object|location","status":"不超过60字"}}]}}。没有就输出空数组，不要解释。
+已有状态：{state_view}
+原文：{text}"""
+_RELATION_TASK = """只抽取当前 chunk 的剧情关系。输出 JSON：{{"plotline_updates":[{{"action":"open|advance|close","title":"","note":"不超过60字"}}],"context_refs":["实体名"]}}。没有就输出空数组，不要解释。
+已有状态：{state_view}
+原文：{text}"""
+
 _FALLBACK_TYPES = {"character", "object", "location"}
 
 
@@ -285,6 +295,7 @@ class LLMExtractor:
         model: str | None = None,
         timeout: float = 90.0,
         review: bool | None = None,
+        multi_task: bool | None = None,
     ) -> None:
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
         self.base_url = base_url or os.environ.get(
@@ -300,6 +311,9 @@ class LLMExtractor:
         if review is None:
             review = os.environ.get("STORYPIPE_LLM_REVIEW", "off").lower() not in {"0", "off", "false", "no"}
         self.review = bool(review)
+        if multi_task is None:
+            multi_task = os.environ.get("STORYPIPE_LLM_MULTI_TASK", "on").lower() not in {"0", "off", "false", "no"}
+        self.multi_task = bool(multi_task)
         self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
@@ -314,6 +328,7 @@ class LLMExtractor:
             "compress_max_tokens": _COMPRESS_MAX_TOKENS,
             "max_attempts": self.max_attempts,
             "review": self.review,
+            "multi_task": self.multi_task,
         }
 
     def _client(self):
@@ -322,6 +337,8 @@ class LLMExtractor:
         return openai.OpenAI(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
 
     def extract_unit(self, unit: StoryUnit, state_view: str = "", recent_raw: str = "") -> dict:
+        if self.multi_task:
+            return self._extract_split_tasks(unit, state_view)
         client = self._client()
         user_msg = _USER_TEMPLATE.format(
             title=WORK_TITLE(unit.work_id),
@@ -361,6 +378,49 @@ class LLMExtractor:
                 if attempt < self.max_attempts:
                     logger.warning("unit %s LLM 调用/解析失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
         raise RuntimeError(f"LLM 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
+
+    def _task_json(self, unit: StoryUnit, state_view: str, template: str, task: str, max_tokens: int) -> dict:
+        client = self._client()
+        msg = template.format(state_view=state_view or "（无）", text=unit.text)
+        last_error: Exception | None = None
+        for attempt in range(1, self.max_attempts + 1):
+            try:
+                resp = client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "system", "content": "你是严格的 JSON 信息抽取器。"}, {"role": "user", "content": msg}],
+                    temperature=0.1, max_tokens=max_tokens, response_format={"type": "json_object"},
+                )
+                self._record_usage(resp)
+                return _parse_json(resp.choices[0].message.content or "")
+            except Exception as e:  # noqa: BLE001
+                last_error = e
+                if attempt < self.max_attempts:
+                    logger.warning("unit %s %s 抽取失败，第 %s 次重试: %s", unit.unit_id, task, attempt, e)
+        raise RuntimeError(f"{task} 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
+
+    def _extract_split_tasks(self, unit: StoryUnit, state_view: str) -> dict:
+        """摘要、实体、剧情关系分别抽取，单个辅任务失败不拖垮整个 chunk。"""
+        try:
+            summary_raw = self._task_json(unit, state_view, _SUMMARY_TASK, "summary", 500)
+            summary = str(summary_raw.get("summary", "") or "").strip()
+            if not summary:
+                raise ValueError("summary 为空")
+            event = summary_raw.get("recent_event", "")
+            core = {"summary": summary, "recent_event": {"text": str(event).strip()[:120]} if str(event).strip() else None}
+        except Exception as e:
+            raise RuntimeError(f"核心摘要抽取失败: {e}") from e
+        for template, task, key in ((_ENTITY_TASK, "entity", "entity_updates"), (_RELATION_TASK, "relation", "plotline_updates")):
+            try:
+                raw = self._task_json(unit, state_view, template, task, 700)
+                core[key] = raw.get(key, []) or []
+                if task == "relation":
+                    core["context_refs"] = raw.get("context_refs", []) or []
+            except Exception as e:
+                logger.warning("unit %s %s 任务失败，保留其他抽取结果: %s", unit.unit_id, task, e)
+                core.setdefault(key, [])
+                if task == "relation":
+                    core.setdefault("context_refs", [])
+        return coerce_fields(core, unit)
 
     def _review_unit(self, unit: StoryUnit, draft: dict, state_view: str, kind: str) -> dict:
         """第二次调用做轻量复核；复核失败时由调用方保留 draft。"""
