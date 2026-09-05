@@ -315,6 +315,7 @@ class LLMExtractor:
             multi_task = os.environ.get("STORYPIPE_LLM_MULTI_TASK", "on").lower() not in {"0", "off", "false", "no"}
         self.multi_task = bool(multi_task)
         self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+        self.errors: list[dict] = []
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
 
@@ -360,6 +361,7 @@ class LLMExtractor:
                     temperature=_TEMPERATURE,
                     max_tokens=_EXTRACT_MAX_TOKENS,
                     response_format={"type": "json_object"},
+                    extra_body={"thinking": {"type": "disabled"}},
                 )
                 self._record_usage(resp)
                 content = resp.choices[0].message.content or ""
@@ -384,16 +386,24 @@ class LLMExtractor:
         msg = template.format(state_view=state_view or "（无）", text=unit.text)
         last_error: Exception | None = None
         for attempt in range(1, self.max_attempts + 1):
+            content = ""
             try:
                 resp = client.chat.completions.create(
                     model=self.model,
                     messages=[{"role": "system", "content": "你是严格的 JSON 信息抽取器。"}, {"role": "user", "content": msg}],
                     temperature=0.1, max_tokens=max_tokens, response_format={"type": "json_object"},
+                    extra_body={"thinking": {"type": "disabled"}},
                 )
                 self._record_usage(resp)
-                return _parse_json(resp.choices[0].message.content or "")
+                content = resp.choices[0].message.content or ""
+                return _parse_json(content)
             except Exception as e:  # noqa: BLE001
                 last_error = e
+                self.errors.append({
+                    "unit_id": unit.unit_id, "order": unit.order, "task": task,
+                    "attempt": attempt, "error": str(e),
+                    "raw_preview": content[-1000:] if content else "",
+                })
                 if attempt < self.max_attempts:
                     logger.warning("unit %s %s 抽取失败，第 %s 次重试: %s", unit.unit_id, task, attempt, e)
         raise RuntimeError(f"{task} 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
@@ -443,6 +453,7 @@ class LLMExtractor:
                     temperature=0,
                     max_tokens=900,
                     response_format={"type": "json_object"},
+                    extra_body={"thinking": {"type": "disabled"}},
                 )
                 self._record_usage(resp)
                 content = resp.choices[0].message.content or ""
@@ -478,6 +489,7 @@ class LLMExtractor:
                     ],
                     temperature=_TEMPERATURE,
                     max_tokens=_COMPRESS_MAX_TOKENS,
+                    extra_body={"thinking": {"type": "disabled"}},
                 )
                 self._record_usage(resp)
                 content = (resp.choices[0].message.content or "").strip()
