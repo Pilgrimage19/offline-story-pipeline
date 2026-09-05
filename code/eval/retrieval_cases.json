@@ -1,0 +1,9 @@
+[
+  {"id": "engine-count", "work_id": "wandering_earth", "query": "地球发动机共有多少台", "relevant_orders": [3]},
+  {"id": "factions", "work_id": "wandering_earth", "query": "前面是不是提过飞船派和地球派", "max_order": 30, "relevant_orders": [18, 19, 20, 21, 22]},
+  {"id": "jupiter", "work_id": "wandering_earth", "query": "木星引力弹弓是怎么回事", "relevant_orders": [74, 75, 76, 77, 79]},
+  {"id": "antimatter", "work_id": "wandering_earth", "query": "反物质炸弹什么时候出现", "relevant_orders": [56, 57, 69]},
+  {"id": "jia-daizi", "work_id": "wandering_earth", "query": "加代子后来为什么离开", "relevant_orders": [64, 65, 67, 69]},
+  {"id": "helium-flash", "work_id": "wandering_earth", "query": "氦闪发生时发生了什么", "relevant_orders": [96, 101, 102]},
+  {"id": "spoiler-boundary", "work_id": "wandering_earth", "query": "氦闪的最终结果是什么", "max_order": 30, "relevant_orders": []}
+]

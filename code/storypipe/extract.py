@@ -277,12 +277,13 @@ def extract_work(
     data_root: Path,
     extractor: UnitExtractor | None = None,
     force: bool = False,
+    limit: Optional[int] = None,
 ) -> dict:
     paths = WorkPaths(data_root, work_id)
     paths.ensure()
     extractor = extractor or make_extractor()
 
-    units, state, stats = run_chain(work_id, data_root, extractor, force=force)
+    units, state, stats = run_chain(work_id, data_root, extractor, force=force, limit=limit)
     save_units(paths.extracted_dir / "units_extracted.jsonl", units)
     save_json(paths.extracted_dir / "meta.json", {
         "work_id": work_id,
@@ -293,6 +294,8 @@ def extract_work(
         "extractor": extractor.name,
         "cache_identity": _cache_identity(extractor),
         "unit_count": len(units),
+        "limit": limit,
+        "llm_usage": getattr(extractor, "usage", None),
         **stats,
         "final_state_fp": state_mod.fingerprint(state),
     })
@@ -305,4 +308,5 @@ def extract_work(
         "fresh": stats["fresh"],
         "degraded": stats["degraded"],
         "compress_fresh": stats["compress_fresh"],
+        "llm_usage": getattr(extractor, "usage", None),
     }

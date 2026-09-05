@@ -49,7 +49,9 @@ def _run_stage(stage: str, args: argparse.Namespace) -> dict:
     if stage == "segment":
         return segment_mod.segment_work(args.work, args.data_root, threshold=args.scene_threshold)
     if stage == "extract":
-        return extract_mod.extract_work(args.work, args.data_root, force=args.force)
+        return extract_mod.extract_work(
+            args.work, args.data_root, force=args.force, limit=args.limit
+        )
     if stage == "index":
         return index_mod.build_index(args.work, args.data_root)
     if stage == "vector-index":
@@ -75,6 +77,10 @@ def main(argv=None) -> int:
         help="向量模型的 Hugging Face ID 或本地目录（仅 vector-index）",
     )
     parser.add_argument("--force", action="store_true", help="extract 阶段忽略缓存重新抽取")
+    parser.add_argument(
+        "--limit", type=int, default=None,
+        help="extract 阶段最多处理前 N 个单元（用于小批量试跑）",
+    )
     args = parser.parse_args(argv)
 
     os.environ["STORYPIPE_EXTRACTOR"] = args.extractor

@@ -25,7 +25,7 @@ PROMPT_VERSION = "extract-v0.2-stateful"
 logger = logging.getLogger(__name__)
 
 _TEMPERATURE = 0.2
-_EXTRACT_MAX_TOKENS = 600
+_EXTRACT_MAX_TOKENS = 1200
 _COMPRESS_MAX_TOKENS = 300
 _MAX_ATTEMPTS = 2
 
@@ -203,6 +203,7 @@ class LLMExtractor:
         )
         self.model = model or os.environ.get("STORYPIPE_LLM_MODEL", "qwen-plus")
         self.timeout = timeout
+        self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
 
@@ -242,7 +243,9 @@ class LLMExtractor:
                     ],
                     temperature=_TEMPERATURE,
                     max_tokens=_EXTRACT_MAX_TOKENS,
+                    response_format={"type": "json_object"},
                 )
+                self._record_usage(resp)
                 content = resp.choices[0].message.content or ""
                 return coerce_fields(_parse_json(content), unit)
             except Exception as e:  # noqa: BLE001 - API 与格式错误统一重试
@@ -277,6 +280,7 @@ class LLMExtractor:
                     temperature=_TEMPERATURE,
                     max_tokens=_COMPRESS_MAX_TOKENS,
                 )
+                self._record_usage(resp)
                 content = (resp.choices[0].message.content or "").strip()
                 if not content:
                     raise ValueError("章节压缩结果为空")
@@ -286,6 +290,14 @@ class LLMExtractor:
                 if attempt < _MAX_ATTEMPTS:
                     logger.warning("chapter %s 压缩失败，第 %s 次重试: %s", chapter_name, attempt, e)
         raise RuntimeError(f"章节压缩连续 {_MAX_ATTEMPTS} 次失败: {last_error}") from last_error
+
+    def _record_usage(self, response) -> None:
+        usage = getattr(response, "usage", None)
+        self.usage["requests"] += 1
+        for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+            value = getattr(usage, key, None) if usage is not None else None
+            if value is not None:
+                self.usage[key] += int(value)
 
 
 def WORK_TITLE(work_id: str) -> str:

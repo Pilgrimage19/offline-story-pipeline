@@ -47,6 +47,10 @@ python pipeline.py --work wandering_earth --stage vector-index --embedding-model
 python search_story.py --list
 python search_story.py --work wandering_earth --query "为什么人类要建造地球发动机"
 python search_story.py --work wandering_earth --query "为什么人类要建造地球发动机" --retrieval vector
+
+# 运行小型检索召回评测（向量与 FTS 可分别比较）
+python evaluate_retrieval.py --retrieval vector
+python evaluate_retrieval.py --retrieval fts
 python search_story.py --work wandering_earth --query "加代子为什么离开" --max-order 300
 python search_story.py --work wandering_earth --query "前面是不是提过飞船派和地球派"
 
