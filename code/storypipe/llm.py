@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 _TEMPERATURE = 0.2
 _EXTRACT_MAX_TOKENS = 1200
 _COMPRESS_MAX_TOKENS = 300
-_MAX_ATTEMPTS = 2
+_DEFAULT_MAX_ATTEMPTS = 3
 
 SYSTEM_PROMPT = (
     "你是小说剧情陪伴 AI 的 Story Reader。你按顺序阅读作品的剧情单元，"
@@ -203,6 +203,11 @@ class LLMExtractor:
         )
         self.model = model or os.environ.get("STORYPIPE_LLM_MODEL", "qwen-plus")
         self.timeout = timeout
+        # 一次请求失败后的重试次数可调；3 表示最多 3 次总尝试（首次 + 2 次重试）。
+        try:
+            self.max_attempts = max(1, int(os.environ.get("STORYPIPE_LLM_MAX_ATTEMPTS", str(_DEFAULT_MAX_ATTEMPTS))))
+        except ValueError:
+            self.max_attempts = _DEFAULT_MAX_ATTEMPTS
         self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
         if not self.api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY，无法使用 LLM 抽取（可用 STORYPIPE_EXTRACTOR=mock 降级）")
@@ -215,6 +220,7 @@ class LLMExtractor:
             "temperature": _TEMPERATURE,
             "extract_max_tokens": _EXTRACT_MAX_TOKENS,
             "compress_max_tokens": _COMPRESS_MAX_TOKENS,
+            "max_attempts": self.max_attempts,
         }
 
     def _client(self):
@@ -233,7 +239,7 @@ class LLMExtractor:
             text=unit.text,
         )
         last_error: Exception | None = None
-        for attempt in range(1, _MAX_ATTEMPTS + 1):
+        for attempt in range(1, self.max_attempts + 1):
             try:
                 resp = client.chat.completions.create(
                     model=self.model,
@@ -250,9 +256,9 @@ class LLMExtractor:
                 return coerce_fields(_parse_json(content), unit)
             except Exception as e:  # noqa: BLE001 - API 与格式错误统一重试
                 last_error = e
-                if attempt < _MAX_ATTEMPTS:
+                if attempt < self.max_attempts:
                     logger.warning("unit %s LLM 调用/解析失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
-        raise RuntimeError(f"LLM 抽取连续 {_MAX_ATTEMPTS} 次失败: {last_error}") from last_error
+        raise RuntimeError(f"LLM 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
 
     def compress_backdrop(
         self,
@@ -269,7 +275,7 @@ class LLMExtractor:
         )
         client = self._client()
         last_error: Exception | None = None
-        for attempt in range(1, _MAX_ATTEMPTS + 1):
+        for attempt in range(1, self.max_attempts + 1):
             try:
                 resp = client.chat.completions.create(
                     model=self.model,
@@ -287,9 +293,9 @@ class LLMExtractor:
                 return content
             except Exception as e:  # noqa: BLE001 - API 与空响应统一重试
                 last_error = e
-                if attempt < _MAX_ATTEMPTS:
+                if attempt < self.max_attempts:
                     logger.warning("chapter %s 压缩失败，第 %s 次重试: %s", chapter_name, attempt, e)
-        raise RuntimeError(f"章节压缩连续 {_MAX_ATTEMPTS} 次失败: {last_error}") from last_error
+        raise RuntimeError(f"章节压缩连续 {self.max_attempts} 次失败: {last_error}") from last_error
 
     def _record_usage(self, response) -> None:
         usage = getattr(response, "usage", None)
