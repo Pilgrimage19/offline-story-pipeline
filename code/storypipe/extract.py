@@ -322,6 +322,7 @@ def extract_work(
 
     units, state, stats = run_chain(work_id, data_root, extractor, force=force, limit=limit)
     save_units(paths.extracted_dir / "units_extracted.jsonl", units)
+    save_json(paths.extracted_dir / "llm_errors.json", getattr(extractor, "errors", []))
     save_json(paths.extracted_dir / "meta.json", {
         "work_id": work_id,
         "schema_version": SCHEMA_VERSION,
@@ -333,6 +334,7 @@ def extract_work(
         "unit_count": len(units),
         "limit": limit,
         "llm_usage": getattr(extractor, "usage", None),
+        "llm_error_count": len(getattr(extractor, "errors", [])),
         **stats,
         "final_state_fp": state_mod.fingerprint(state),
     })
