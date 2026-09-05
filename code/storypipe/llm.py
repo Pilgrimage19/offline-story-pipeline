@@ -79,9 +79,10 @@ _COMPRESS_PROMPT = """你是小说剧情 Reader 的章节归档器。请把本�
 {events}
 """
 
-_REVIEW_PROMPT = """请校验下面这段小说 chunk 的抽取结果，只依据 chunk 原文和已有故事状态修正错误。
-输出一个 JSON 对象，字段必须只有 summary、entity_updates、plotline_updates、context_refs、recent_event。
-保持 summary 1~2 句；没有内容的数组输出 []；不要解释，不要 Markdown，不要新增原文没有的事实。
+_REVIEW_PROMPT = """请校验下面这段小说 chunk 的抽取结果，只依据 chunk 原文和已有故事状态指出必要修正。
+只输出一个很短的 JSON patch，不要重写完整抽取结果；没有修改时所有字段为空。
+字段只能是：summary_replacement、remove_entities、rename_entities、entity_status_updates、plotline_fixes、context_ref_additions、recent_event_replacement。
+不要解释，不要 Markdown，不要新增原文没有的事实。
 
 已有抽取结果：
 {draft}
@@ -201,6 +202,66 @@ def coerce_fields(parsed: dict, unit: StoryUnit) -> dict:
     }
 
 
+def coerce_review_patch(parsed: dict) -> dict:
+    """规整复核 patch；patch 不合格时让调用方保留核心结果。"""
+    if not isinstance(parsed, dict):
+        raise ValueError("复核 patch 根节点必须是 JSON 对象")
+    def strings(value, limit=20):
+        if value in (None, ""):
+            return []
+        if not isinstance(value, list):
+            raise ValueError("复核 patch 数组字段类型错误")
+        return [str(x).strip()[:80] for x in value[:limit] if str(x).strip()]
+    renames = parsed.get("rename_entities", []) or []
+    updates = parsed.get("entity_status_updates", []) or []
+    fixes = parsed.get("plotline_fixes", []) or []
+    for value in (renames, updates, fixes):
+        if not isinstance(value, list):
+            raise ValueError("复核 patch 数组字段类型错误")
+    return {
+        "summary_replacement": str(parsed.get("summary_replacement", "") or "").strip()[:300],
+        "remove_entities": strings(parsed.get("remove_entities", [])),
+        "rename_entities": [
+            {"from": str(x.get("from", "")).strip()[:80], "to": str(x.get("to", "")).strip()[:80]}
+            for x in renames[:10] if isinstance(x, dict) and str(x.get("from", "")).strip() and str(x.get("to", "")).strip()
+        ],
+        "entity_status_updates": [
+            {"name": str(x.get("name", "")).strip()[:80], "status": str(x.get("status", "")).strip()[:120], "note": str(x.get("note", "")).strip()[:120]}
+            for x in updates[:20] if isinstance(x, dict) and str(x.get("name", "")).strip()
+        ],
+        "plotline_fixes": [
+            {"action": str(x.get("action", "advance")).strip(), "title": str(x.get("title", "")).strip()[:60], "note": str(x.get("note", "")).strip()[:120]}
+            for x in fixes[:10] if isinstance(x, dict) and str(x.get("title", "")).strip()
+        ],
+        "context_ref_additions": strings(parsed.get("context_ref_additions", [])),
+        "recent_event_replacement": str(parsed.get("recent_event_replacement", "") or "").strip()[:120],
+    }
+
+
+def apply_review_patch(fields: dict, patch: dict) -> dict:
+    """只应用复核 patch，核心抽取字段仍由第一次调用提供。"""
+    out = json.loads(json.dumps(fields, ensure_ascii=False))
+    if patch["summary_replacement"]:
+        out["summary"] = patch["summary_replacement"]
+    if patch["recent_event_replacement"]:
+        out["recent_event"] = {"text": patch["recent_event_replacement"]}
+    removed = set(patch["remove_entities"])
+    renames = {x["from"]: x["to"] for x in patch["rename_entities"]}
+    for entity in out.get("entity_updates", []):
+        if entity.get("name") in renames:
+            entity["name"] = renames[entity["name"]]
+        for update in patch["entity_status_updates"]:
+            if entity.get("name") == update["name"]:
+                if update["status"]:
+                    entity["status"] = update["status"]
+                if update["note"]:
+                    entity["note"] = update["note"]
+    out["entity_updates"] = [e for e in out.get("entity_updates", []) if e.get("name") not in removed]
+    out["plotline_updates"] = out.get("plotline_updates", []) + patch["plotline_fixes"]
+    out["context_refs"] = list(dict.fromkeys(out.get("context_refs", []) + patch["context_ref_additions"]))
+    return out
+
+
 class LLMExtractor:
     name = "llm"
 
@@ -275,7 +336,8 @@ class LLMExtractor:
                 fields = coerce_fields(_parse_json(content), unit)
                 if self.review:
                     try:
-                        return self._review_unit(unit, fields, state_view)
+                        patch = self._review_unit(unit, fields, state_view)
+                        return apply_review_patch(fields, patch)
                     except Exception as e:  # review 失败不丢弃已成功的核心抽取
                         logger.warning("unit %s 复核失败，保留核心抽取结果: %s", unit.unit_id, e)
                 return fields
@@ -308,7 +370,7 @@ class LLMExtractor:
                 )
                 self._record_usage(resp)
                 content = resp.choices[0].message.content or ""
-                return coerce_fields(_parse_json(content), unit)
+                return coerce_review_patch(_parse_json(content))
             except Exception as e:  # noqa: BLE001
                 last_error = e
                 if attempt < self.max_attempts:
