@@ -24,10 +24,12 @@ from . import state as state_mod
 from .config import PIPELINE_VERSION, SCHEMA_VERSION, WorkPaths
 from .llm import LLMExtractor, PROMPT_VERSION, _fallback_fields
 from .model import StoryUnit, load_units, save_json, save_units
+from .textutil import content_chars
 
 logger = logging.getLogger(__name__)
 
 _CACHE_IDENTITY_FILE = "_identity.json"
+_RELATED_CONTEXT_VERSION = "lexical-related-v1"
 
 
 class UnitExtractor(Protocol):
@@ -124,6 +126,37 @@ def make_extractor() -> UnitExtractor:
     return MockExtractor()
 
 
+def _related_context(current: StoryUnit, prior: list[StoryUnit], top_k: int = 3,
+                     max_chars: int = 1800) -> str:
+    """从已读 chunk 中选少量相关历史，作为可选的远距离上下文。"""
+    if not prior or os.environ.get("STORYPIPE_CONTEXT_RETRIEVAL", "off").lower() not in {"1", "true", "lexical"}:
+        return ""
+    query = set(content_chars(current.text))
+    if len(query) < 2:
+        return ""
+    scored: list[tuple[int, StoryUnit]] = []
+    for unit in prior[:-2]:  # 最近两段已经单独传入，避免重复
+        chars = set(content_chars(unit.text))
+        score = len(query & chars)
+        if score:
+            scored.append((score, unit))
+    scored.sort(key=lambda item: (item[0], item[1].order), reverse=True)
+    selected: list[str] = []
+    used = 0
+    for score, unit in scored[:top_k]:
+        text = unit.text.strip()
+        piece = f"@{unit.order}（{unit.chapter_name}，相关度{score}）：{text}"
+        if used + len(piece) > max_chars:
+            piece = piece[: max_chars - used]
+        if not piece:
+            break
+        selected.append(piece)
+        used += len(piece) + 1
+        if used >= max_chars:
+            break
+    return "\n".join(selected)
+
+
 def _compress_chapter(
     cache: ResultCache,
     extractor: UnitExtractor,
@@ -209,8 +242,9 @@ def run_chain(
 
         fp = state_mod.fingerprint(state)
         prev_texts = [all_units[j].text for j in range(max(0, idx - 2), idx)]
+        related_raw = _related_context(u, all_units[:idx])
         view = state_mod.state_view(state)
-        key = cache.chain_key(PROMPT_VERSION, fp, u.text, prev_texts)
+        key = cache.chain_key(PROMPT_VERSION, fp, u.text, prev_texts + [_RELATED_CONTEXT_VERSION, related_raw])
 
         fields: Optional[dict] = None if force else cache.get(key)
         degraded = False
@@ -218,7 +252,10 @@ def run_chain(
             stats["cached"] += 1
         else:
             try:
-                fields = extractor.extract_unit(u, state_view=view, recent_raw="\n".join(prev_texts))
+                recent = "\n".join(prev_texts)
+                if related_raw:
+                    recent += "\n\n【更早的相关历史（仅供辅助，不改变顺序边界）】\n" + related_raw
+                fields = extractor.extract_unit(u, state_view=view, recent_raw=recent)
             except Exception as e:  # noqa: BLE001 —— 单单元失败不阻塞整篇
                 logger.warning("unit %s 抽取失败（%s），降级且不更新 state", u.unit_id, e)
                 fields = _fallback_fields(u)
