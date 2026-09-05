@@ -64,7 +64,7 @@ python search_story.py --work wandering_earth --query "前面是不是提过飞�
 - **两级结构（初版假设，未冻结）**：chapter = 显式章节标题（见 `config.py` WORK_META.chapter_headers）；scene unit = 长叙述段（> `--scene-threshold` 字，默认 80）锚定 + 短段并入。当前 `unit_id` 基于顺序号，调整规则或阈值会改变后续 ID；稳定引用方案将在后续版本改造。
 - **抽取**：默认 `STORYPIPE_EXTRACTOR=auto` —— 有 `OPENAI_API_KEY` 用 LLM（默认 qwen-plus，可配 `STORYPIPE_LLM_MODEL`/`STORYPIPE_LLM_BASE_URL`），否则降级 mock（summary=首句截断）。缓存按抽取器、模型、端点、prompt/state schema 和生成参数隔离于 `03_extracted/cache/<配置指纹>/`；模型调用或解析失败默认最多尝试 3 次（首次 + 2 次重试），可用 `STORYPIPE_LLM_MAX_ATTEMPTS` 调整，最终降级结果不会写入正常缓存。`--force` 可忽略缓存。
 - **上下文检索实验**：默认仍使用精简 state + 最近 1～2 段原文；设置 `STORYPIPE_CONTEXT_RETRIEVAL=lexical` 后，会从当前 chunk 之前的历史中补充最多 3 个相关片段（最多约 1800 字），不替代 state，并严格排除后文。
-- **多阶段抽取实验**：LLM 核心抽取成功后默认追加一次短 prompt 复核；复核只返回 patch（修正项），由代码应用到核心结果；复核失败保留核心结果，不将其降级。可用 `STORYPIPE_LLM_REVIEW=off` 关闭。
+- **多阶段抽取实验**：可用 `STORYPIPE_LLM_REVIEW=on` 开启实体/剧情两路 patch 复核；复核失败保留核心结果，不将其降级。由于当前模型 JSON 稳定性不足，默认关闭，正式抽取先使用核心抽取 + 重试。
 - **防剧透**：检索时传 `max_order`（= 用户当前进度 order），过滤在检索层完成；离线侧不维护用户状态。
 - **source of truth**：`03_extracted/units_extracted.jsonl`（原文 + summary + 实体）；`05_index/story.db` 只是检索索引。索引缺失/FTS5 不可用时 Adapter 自动降级为纯扫描，接口不变。
 - **向量检索**：`05_index/vectors.lance` 是可重建的 LanceDB side index，默认模型为 `BAAI/bge-small-zh-v1.5`（可用 `STORYPIPE_EMBEDDING_MODEL` 或 `--embedding-model` 修改，也支持本地模型目录）。`StoryMemory(retrieval="auto")` 优先向量，向量缺失、陈旧或依赖不可用时自动回退 FTS/扫描；`max_order` 在 LanceDB 查询阶段强过滤。

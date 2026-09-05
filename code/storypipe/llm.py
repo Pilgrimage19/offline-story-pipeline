@@ -79,9 +79,22 @@ _COMPRESS_PROMPT = """你是小说剧情 Reader 的章节归档器。请把本�
 {events}
 """
 
-_REVIEW_PROMPT = """请校验下面这段小说 chunk 的抽取结果，只依据 chunk 原文和已有故事状态指出必要修正。
-只输出一个很短的 JSON patch，不要重写完整抽取结果；没有修改时所有字段为空。
-字段只能是：summary_replacement、remove_entities、rename_entities、entity_status_updates、plotline_fixes、context_ref_additions、recent_event_replacement。
+_ENTITY_REVIEW_PROMPT = """只检查事实和实体，不要检查剧情线。只输出很短的 JSON patch，不要重写完整结果；没有修改时字段为空。
+字段只能是：summary_replacement、remove_entities、rename_entities、entity_status_updates。
+不要解释，不要 Markdown，不要新增原文没有的事实。
+
+已有抽取结果：
+{draft}
+
+当前故事状态：
+{state_view}
+
+当前 chunk 原文：
+{text}
+"""
+
+_PLOT_REVIEW_PROMPT = """只检查剧情关系和上下文，不要检查人物列表。只输出很短的 JSON patch，不要重写完整结果；没有修改时字段为空。
+字段只能是：plotline_fixes、context_ref_additions、recent_event_replacement。
 不要解释，不要 Markdown，不要新增原文没有的事实。
 
 已有抽取结果：
@@ -285,7 +298,7 @@ class LLMExtractor:
         except ValueError:
             self.max_attempts = _DEFAULT_MAX_ATTEMPTS
         if review is None:
-            review = os.environ.get("STORYPIPE_LLM_REVIEW", "on").lower() not in {"0", "off", "false", "no"}
+            review = os.environ.get("STORYPIPE_LLM_REVIEW", "off").lower() not in {"0", "off", "false", "no"}
         self.review = bool(review)
         self.usage = {"requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
         if not self.api_key:
@@ -336,8 +349,10 @@ class LLMExtractor:
                 fields = coerce_fields(_parse_json(content), unit)
                 if self.review:
                     try:
-                        patch = self._review_unit(unit, fields, state_view)
-                        return apply_review_patch(fields, patch)
+                        entity_patch = self._review_unit(unit, fields, state_view, "entity")
+                        fields = apply_review_patch(fields, entity_patch)
+                        plot_patch = self._review_unit(unit, fields, state_view, "plot")
+                        return apply_review_patch(fields, plot_patch)
                     except Exception as e:  # review 失败不丢弃已成功的核心抽取
                         logger.warning("unit %s 复核失败，保留核心抽取结果: %s", unit.unit_id, e)
                 return fields
@@ -347,10 +362,11 @@ class LLMExtractor:
                     logger.warning("unit %s LLM 调用/解析失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
         raise RuntimeError(f"LLM 抽取连续 {self.max_attempts} 次失败: {last_error}") from last_error
 
-    def _review_unit(self, unit: StoryUnit, draft: dict, state_view: str) -> dict:
+    def _review_unit(self, unit: StoryUnit, draft: dict, state_view: str, kind: str) -> dict:
         """第二次调用做轻量复核；复核失败时由调用方保留 draft。"""
         client = self._client()
-        user_msg = _REVIEW_PROMPT.format(
+        template = _ENTITY_REVIEW_PROMPT if kind == "entity" else _PLOT_REVIEW_PROMPT
+        user_msg = template.format(
             draft=json.dumps(draft, ensure_ascii=False),
             state_view=state_view or "（无）",
             text=unit.text,
@@ -374,7 +390,7 @@ class LLMExtractor:
             except Exception as e:  # noqa: BLE001
                 last_error = e
                 if attempt < self.max_attempts:
-                    logger.warning("unit %s 复核失败，第 %s 次重试: %s", unit.unit_id, attempt, e)
+                    logger.warning("unit %s %s复核失败，第 %s 次重试: %s", unit.unit_id, kind, attempt, e)
         raise RuntimeError(f"复核连续 {self.max_attempts} 次失败: {last_error}") from last_error
 
     def compress_backdrop(
