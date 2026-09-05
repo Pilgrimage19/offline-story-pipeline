@@ -2,32 +2,2122 @@
   "schema_version": "story-state@0.2",
   "work_id": "wandering_earth",
   "last_order": 103,
-  "characters": [],
-  "objects": [],
-  "locations": [],
-  "plotlines": [],
+  "characters": [
+    {
+      "name": "爷爷",
+      "first_seen_order": 5,
+      "last_seen_order": 27,
+      "aliases": [],
+      "status": "已去世，临终念叨地球流浪"
+    },
+    {
+      "name": "主角",
+      "first_seen_order": 7,
+      "last_seen_order": 101,
+      "aliases": [],
+      "status": "目睹太阳氦闪爆发，眼睛短暂失明后恢复，视力更清晰。"
+    },
+    {
+      "name": "教师",
+      "first_seen_order": 7,
+      "last_seen_order": 7,
+      "aliases": [],
+      "status": "带主角班级三十个孩子进行环球旅行"
+    },
+    {
+      "name": "小星老师",
+      "first_seen_order": 8,
+      "last_seen_order": 34,
+      "aliases": [],
+      "status": "被主角父亲提及，对主角评价为有创造力的学生。"
+    },
+    {
+      "name": "小星老师的男同事",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "status": "提议环球体验课应放在近代史课前，以使学生心理上适应"
+    },
+    {
+      "name": "灵儿",
+      "first_seen_order": 14,
+      "last_seen_order": 41,
+      "aliases": [],
+      "status": "与主角对话后，与阿东一同前往地面，主角再未见到他们。"
+    },
+    {
+      "name": "天体物理学家",
+      "first_seen_order": 16,
+      "last_seen_order": 16,
+      "aliases": [],
+      "status": "三个多世纪前发现太阳内部氢转化为氦速度加快，发射上万个探测器穿过太阳，建立恒星数学模型。"
+    },
+    {
+      "name": "太阳灾变",
+      "first_seen_order": 18,
+      "last_seen_order": 18,
+      "aliases": [],
+      "status": "将炸毁和吞没太阳系所有适合居住的类地行星，并使所有类木行星完全改变形态和轨道。"
+    },
+    {
+      "name": "第一次氦闪",
+      "first_seen_order": 18,
+      "last_seen_order": 18,
+      "aliases": [],
+      "status": "发生后，太阳氦闪将在一段时间反复发生，长度可能相当于上千个人类历史。"
+    },
+    {
+      "name": "飞船派",
+      "first_seen_order": 18,
+      "last_seen_order": 18,
+      "aliases": [],
+      "status": "与地球派发生争斗，主张飞船移民。"
+    },
+    {
+      "name": "地球派",
+      "first_seen_order": 18,
+      "last_seen_order": 102,
+      "aliases": [],
+      "status": "最后的地球派五千多人被处决后，在太阳爆发时仍稳稳站在冰面上，如雕像般。"
+    },
+    {
+      "name": "阿东",
+      "first_seen_order": 19,
+      "last_seen_order": 41,
+      "aliases": [],
+      "status": "与灵儿一同前往地面。"
+    },
+    {
+      "name": "阿东父亲",
+      "first_seen_order": 19,
+      "last_seen_order": 19,
+      "aliases": [],
+      "status": "顽固飞船派，因参加反联合政府暴动被关在监狱里"
+    },
+    {
+      "name": "主角同学",
+      "first_seen_order": 22,
+      "last_seen_order": 31,
+      "aliases": [],
+      "status": "在飞机上，对地球轨道变化提出疑问，被主角称为小天才，因记忆遗传技术而知识丰富。"
+    },
+    {
+      "name": "主角班级",
+      "first_seen_order": 24,
+      "last_seen_order": 29,
+      "aliases": [],
+      "status": "作为学校第一批居民迁入地下城，乘车穿过高大隧洞，约半小时后到达，对地下生活感到黯然神伤。"
+    },
+    {
+      "name": "水手和船长",
+      "first_seen_order": 24,
+      "last_seen_order": 27,
+      "aliases": [],
+      "status": "在飞机上，看到光柱变亮变直时，水手们欢呼，船长沉默"
+    },
+    {
+      "name": "主角一行",
+      "first_seen_order": 25,
+      "last_seen_order": 26,
+      "aliases": [],
+      "status": "下飞机，被光柱照得睁不开眼，目睹启航"
+    },
+    {
+      "name": "启航",
+      "first_seen_order": 25,
+      "last_seen_order": 25,
+      "aliases": [],
+      "status": "启航的日子终于到了"
+    },
+    {
+      "name": "父亲",
+      "first_seen_order": 33,
+      "last_seen_order": 38,
+      "aliases": [],
+      "status": "在远日点海边向母亲表达希望的重要性，认为希望是高贵之人的必备，要求母亲转告主角。"
+    },
+    {
+      "name": "母亲",
+      "first_seen_order": 33,
+      "last_seen_order": 33,
+      "aliases": [],
+      "status": "面对父亲离开平静接受，转而赞美焰火。"
+    },
+    {
+      "name": "主角父亲",
+      "first_seen_order": 34,
+      "last_seen_order": 69,
+      "aliases": [],
+      "status": "在清除小行星行动中被碎片击中飞船座舱瞬间汽化，已牺牲，被追授勋章。"
+    },
+    {
+      "name": "主角母亲",
+      "first_seen_order": 34,
+      "last_seen_order": 49,
+      "aliases": [],
+      "status": "未能撤出，与一万八千人留在市中心广场，岩浆涌入时遇难。"
+    },
+    {
+      "name": "钱德勒博士",
+      "first_seen_order": 37,
+      "last_seen_order": 37,
+      "aliases": [],
+      "status": "航行委员会的天文学家，观测到太阳氦聚集在加速，通过妻子向主角母亲传递消息。"
+    },
+    {
+      "name": "钱德勒博士夫人",
+      "first_seen_order": 37,
+      "last_seen_order": 37,
+      "aliases": [],
+      "status": "向主角母亲透露丈夫观测到氦聚集加速的消息。"
+    },
+    {
+      "name": "梦娜和大刚",
+      "first_seen_order": 40,
+      "last_seen_order": 40,
+      "aliases": [],
+      "status": "被灵儿提及，因旷课被学校开除，但发回海滩景象，显示外面不太热，仍在满世界转。"
+    },
+    {
+      "name": "士兵",
+      "first_seen_order": 47,
+      "last_seen_order": 61,
+      "aliases": [],
+      "status": "在地下城入口处，一动不动盯着远方，眼里充满恐惧"
+    },
+    {
+      "name": "山彬加代子",
+      "first_seen_order": 52,
+      "last_seen_order": 65,
+      "aliases": [],
+      "status": "在飞机上喃喃自语，问何时到头，不知指旅程还是充满苦难的生活。"
+    },
+    {
+      "name": "主角与山彬加代子",
+      "first_seen_order": 52,
+      "last_seen_order": 64,
+      "aliases": [],
+      "status": "在飞机上穿越国际日期变更线，见到最黑的黑夜，心情黯淡到极点，继续回亚洲的旅行。"
+    },
+    {
+      "name": "联合政府民政局官员",
+      "first_seen_order": 53,
+      "last_seen_order": 54,
+      "aliases": [],
+      "status": "在纽约主持主角与加代子结婚登记，高兴地提供伏特加共饮，并赠送亚洲住房钥匙。"
+    },
+    {
+      "name": "加代子",
+      "first_seen_order": 55,
+      "last_seen_order": 90,
+      "aliases": [],
+      "status": "已在澳洲战役中阵亡。"
+    },
+    {
+      "name": "机长",
+      "first_seen_order": 58,
+      "last_seen_order": 58,
+      "aliases": [],
+      "status": "在飞机上发出广播，解释爆音来源，要求乘客戴耳机，宣布将在夏威夷紧急降落。"
+    },
+    {
+      "name": "官员",
+      "first_seen_order": 60,
+      "last_seen_order": 60,
+      "aliases": [],
+      "status": "接应主角一行，告知流星情况，因新通知改变路线就近找入口。"
+    },
+    {
+      "name": "军官",
+      "first_seen_order": 61,
+      "last_seen_order": 61,
+      "aliases": [],
+      "status": "在地下城入口，回答加代子问题，称黑色屏障为浪"
+    },
+    {
+      "name": "女人",
+      "first_seen_order": 65,
+      "last_seen_order": 68,
+      "aliases": [],
+      "status": "在机舱中劝慰瘦弱男人，认为活着才能感受痛苦与恐惧，死亡只有黑暗，活着更好。"
+    },
+    {
+      "name": "男人",
+      "first_seen_order": 66,
+      "last_seen_order": 66,
+      "aliases": [],
+      "status": "试图用手枪自杀，被女人阻止，目光呆滞"
+    },
+    {
+      "name": "瘦弱男人",
+      "first_seen_order": 68,
+      "last_seen_order": 68,
+      "aliases": [],
+      "status": "面对地球发动机蓝光流泪，被女人劝慰后重燃生存希望，未回答但能活下去了。"
+    },
+    {
+      "name": "空军少将",
+      "first_seen_order": 69,
+      "last_seen_order": 69,
+      "aliases": [],
+      "status": "向主角转交追授勋章，说明父亲牺牲过程，保证无痛苦。"
+    },
+    {
+      "name": "主角与加代子",
+      "first_seen_order": 69,
+      "last_seen_order": 78,
+      "aliases": [],
+      "status": "在地面寻找春天未果，世界仍灰色，无绿色。"
+    },
+    {
+      "name": "记者",
+      "first_seen_order": 76,
+      "last_seen_order": 76,
+      "aliases": [],
+      "status": "描述木星升起时的恐惧和压抑感。"
+    },
+    {
+      "name": "主角的儿子",
+      "first_seen_order": 77,
+      "last_seen_order": 80,
+      "aliases": [],
+      "status": "被加代子扔下不管，留在地下城。"
+    },
+    {
+      "name": "联合政府",
+      "first_seen_order": 84,
+      "last_seen_order": 89,
+      "aliases": [],
+      "status": "收缩防线死守地球发动机所在的东亚和中亚，后防线崩溃，与不到十万军队在靠近海岸的地球发动机控制中心陷入重围"
+    },
+    {
+      "name": "演讲者",
+      "first_seen_order": 84,
+      "last_seen_order": 86,
+      "aliases": [],
+      "status": "在市中心广场煽动民众，宣称联合政府编造太阳爆发骗局以建立独裁帝国，号召推翻联合政府，控制地球发动机，将地球开回太阳轨道。"
+    },
+    {
+      "name": "市民",
+      "first_seen_order": 84,
+      "last_seen_order": 86,
+      "aliases": [],
+      "status": "在市中心广场接受分发武器，局势紧张。"
+    },
+    {
+      "name": "叛军",
+      "first_seen_order": 88,
+      "last_seen_order": 99,
+      "aliases": [],
+      "status": "押送最后的地球派，收走其密封服核能电池，将其丢在冰面上。"
+    },
+    {
+      "name": "联合政府的十二个集团军",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "status": "相继临阵倒戈，导致中亚和东亚防线全线崩溃"
+    },
+    {
+      "name": "联合政府军队",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "status": "不到十万人，在靠近海岸的地球发动机控制中心陷入重围"
+    },
+    {
+      "name": "澳洲战役",
+      "first_seen_order": 90,
+      "last_seen_order": 90,
+      "aliases": [],
+      "status": "加代子在此阵亡。"
+    },
+    {
+      "name": "讲话的将军",
+      "first_seen_order": 91,
+      "last_seen_order": 91,
+      "aliases": [],
+      "status": "肩上有一颗将星，提议占领地球驾驶室，将其交给外面理智的人类，认为这是拯救灵魂的最后机会。"
+    },
+    {
+      "name": "受伤和没受伤的人",
+      "first_seen_order": 92,
+      "last_seen_order": 92,
+      "aliases": [],
+      "status": "突然狂热起来，随主角冲向地球驾驶室，途中几乎未遇抵抗，人数不断增加。"
+    },
+    {
+      "name": "最高执政官",
+      "first_seen_order": 94,
+      "last_seen_order": 95,
+      "aliases": [],
+      "status": "联合政府最高领导人，在地球驾驶室中向众人发表投降演说，宣布投降以避免地球发动机失控，并呼吁后人记住他们。"
+    },
+    {
+      "name": "最后的地球派",
+      "first_seen_order": 96,
+      "last_seen_order": 100,
+      "aliases": [],
+      "status": "五千多人被叛军押送，遭唾弃和攻击，被收走密封服核能电池，丢在冰面上，在严寒中慢慢死去。"
+    },
+    {
+      "name": "小女孩",
+      "first_seen_order": 96,
+      "last_seen_order": 99,
+      "aliases": [],
+      "status": "用冰块砸向被押送的地球派老者，眼中射出疯狂怒火。"
+    },
+    {
+      "name": "老者",
+      "first_seen_order": 96,
+      "last_seen_order": 99,
+      "aliases": [],
+      "status": "被小女孩用冰块砸中，密封服面罩可能被砸裂。"
+    },
+    {
+      "name": "被判死刑的罪犯",
+      "first_seen_order": 98,
+      "last_seen_order": 100,
+      "aliases": [],
+      "status": "被收走密封服加热核能电池，丢在冰面上，被零下百度严寒慢慢夺去生命。"
+    },
+    {
+      "name": "死刑执行者",
+      "first_seen_order": 98,
+      "last_seen_order": 98,
+      "aliases": [],
+      "status": "收走罪犯密封服上的核能电池，将其丢在冰面上。"
+    },
+    {
+      "name": "岸上的人们",
+      "first_seen_order": 99,
+      "last_seen_order": 101,
+      "aliases": [],
+      "status": "合唱《我的太阳》戛然而止，十几万人呆住，如冻成岩石。"
+    }
+  ],
+  "objects": [
+    {
+      "name": "太阳",
+      "first_seen_order": 2,
+      "last_seen_order": 103,
+      "aliases": [],
+      "kind": "object",
+      "status": "已死亡，变为红巨星，不再发光发热。"
+    },
+    {
+      "name": "地球发动机",
+      "first_seen_order": 3,
+      "last_seen_order": 89,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于东亚和中亚，成为叛军避免使用重武器的原因，使联合政府得以苟延残喘"
+    },
+    {
+      "name": "等离子体光柱",
+      "first_seen_order": 4,
+      "last_seen_order": 4,
+      "aliases": [],
+      "kind": "object",
+      "status": "由地球发动机喷出，蓝白色强光，倾斜分布，可见几百台"
+    },
+    {
+      "name": "酷热",
+      "first_seen_order": 5,
+      "last_seen_order": 5,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球发动机带来的高温，户外气温高达七八十摄氏度，需穿冷却服"
+    },
+    {
+      "name": "暴雨",
+      "first_seen_order": 5,
+      "last_seen_order": 5,
+      "aliases": [],
+      "kind": "object",
+      "status": "高温下频繁出现，雨点被发动机光柱烤热"
+    },
+    {
+      "name": "前太阳时代",
+      "first_seen_order": 6,
+      "last_seen_order": 6,
+      "aliases": [],
+      "kind": "object",
+      "status": "刹车时代以前的人类历史时期，被主角称为让人神往的黄金时代"
+    },
+    {
+      "name": "环球旅行",
+      "first_seen_order": 7,
+      "last_seen_order": 7,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角小学入学时的课程活动，在地球停转后光柱减弱时进行"
+    },
+    {
+      "name": "地球发动机（石家庄附近的太行山出口处）",
+      "first_seen_order": 8,
+      "last_seen_order": 8,
+      "aliases": [],
+      "kind": "object",
+      "status": "近距离可见，金属高山，高一万一千米，比珠峰高两千多米，被称为“上帝的喷灯”，通过大地传来震动"
+    },
+    {
+      "name": "地球发动机（华北794号山）",
+      "first_seen_order": 9,
+      "last_seen_order": 9,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于太行山出口附近，属地球发动机中‘山’级，可乘汽车沿盘山公路登上，左侧金属峭壁，右侧深渊"
+    },
+    {
+      "name": "地球发动机（峰级）",
+      "first_seen_order": 9,
+      "last_seen_order": 9,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球发动机中小型类别，靠巨型电梯上下"
+    },
+    {
+      "name": "钢铁公路",
+      "first_seen_order": 9,
+      "last_seen_order": 9,
+      "aliases": [],
+      "kind": "object",
+      "status": "光滑，沿盘山公路向上，供汽车行驶，通往‘华北794号山’"
+    },
+    {
+      "name": "主角班级车队",
+      "first_seen_order": 10,
+      "last_seen_order": 10,
+      "aliases": [],
+      "kind": "object",
+      "status": "由50吨巨型自卸卡车组成，满载太行山岩石，升至5000米以上，向发动机喷口进发"
+    },
+    {
+      "name": "地球发动机进料口",
+      "first_seen_order": 10,
+      "last_seen_order": 10,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于6000米处，闪着幽幽红光的大洞，吞入岩石无声音"
+    },
+    {
+      "name": "华北794号",
+      "first_seen_order": 11,
+      "last_seen_order": 11,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球发动机，全功率运行时能向大地产生150亿吨推力，位于太行山附近，主角班级已登上其顶峰"
+    },
+    {
+      "name": "等离子体巨墙",
+      "first_seen_order": 11,
+      "last_seen_order": 11,
+      "aliases": [],
+      "kind": "object",
+      "status": "由地球发动机喷口喷出的蓝光等离子体构成，向上无限延伸，位于华北794号顶峰上方"
+    },
+    {
+      "name": "金属巨峰",
+      "first_seen_order": 12,
+      "last_seen_order": 12,
+      "aliases": [],
+      "kind": "object",
+      "status": "耸立在迷蒙大地上，从周围延伸到地平线"
+    },
+    {
+      "name": "光柱",
+      "first_seen_order": 12,
+      "last_seen_order": 12,
+      "aliases": [],
+      "kind": "object",
+      "status": "如倾斜的宇宙森林，刺破摇摇欲坠的天空"
+    },
+    {
+      "name": "船",
+      "first_seen_order": 13,
+      "last_seen_order": 15,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角一行乘坐航行于海上，小星老师站在船头"
+    },
+    {
+      "name": "青蓝色霞光",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "kind": "object",
+      "status": "由西面地球发动机光柱产生，逐渐减弱"
+    },
+    {
+      "name": "粉红色霞光",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "kind": "object",
+      "status": "由东方海平面下的太阳产生，逐渐增强"
+    },
+    {
+      "name": "等离子体墙",
+      "first_seen_order": 16,
+      "last_seen_order": 16,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角认为它像想像中的死亡之墙，雪亮的颜色。"
+    },
+    {
+      "name": "死亡",
+      "first_seen_order": 16,
+      "last_seen_order": 16,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角认为这个时代死亡不再是黑色，而是闪电的颜色，当最后的闪电到来时世界将变成蒸汽。"
+    },
+    {
+      "name": "巨型计算机",
+      "first_seen_order": 17,
+      "last_seen_order": 17,
+      "aliases": [],
+      "kind": "object",
+      "status": "对太阳数学模型进行计算，结果表明太阳演化已向主星序外偏移，氦闪将在四百年内发生，现已过三百八十年。"
+    },
+    {
+      "name": "氦闪",
+      "first_seen_order": 17,
+      "last_seen_order": 41,
+      "aliases": [],
+      "kind": "object",
+      "status": "发生时地球被完全蒸发至少需要一百小时。"
+    },
+    {
+      "name": "红巨星",
+      "first_seen_order": 17,
+      "last_seen_order": 103,
+      "aliases": [],
+      "kind": "object",
+      "status": "太阳氦闪后形成的暗红色球体，体积膨胀至越出火星轨道，不再发光发热，如冰冷红纸，水星、火星、金星已汽化。"
+    },
+    {
+      "name": "密封玻璃球",
+      "first_seen_order": 20,
+      "last_seen_order": 21,
+      "aliases": [],
+      "kind": "object",
+      "status": "已死亡，水混浊，小虾漂浮，藻类腐烂覆盖珊瑚，被小星老师展示给孩子们。"
+    },
+    {
+      "name": "飞船",
+      "first_seen_order": 22,
+      "last_seen_order": 22,
+      "aliases": [],
+      "kind": "object",
+      "status": "目前最快速度仅达光速的百分之零点五，需十七万年才能到达最近有行星的恒星。"
+    },
+    {
+      "name": "地球",
+      "first_seen_order": 22,
+      "last_seen_order": 79,
+      "aliases": [],
+      "kind": "object",
+      "status": "离开木星后，在亚洲发动机推动下持续加速500年。"
+    },
+    {
+      "name": "刹车时代",
+      "first_seen_order": 23,
+      "last_seen_order": 23,
+      "aliases": [],
+      "kind": "object",
+      "status": "人类逃亡五步中的第一步，用地球发动机使地球停止转动，使发动机喷口固定在地球运行的反方向。"
+    },
+    {
+      "name": "逃逸时代",
+      "first_seen_order": 23,
+      "last_seen_order": 43,
+      "aliases": [],
+      "kind": "object",
+      "status": "大灾难接踵而至，地球持续变轨加速。"
+    },
+    {
+      "name": "流浪时代Ⅰ(加速)",
+      "first_seen_order": 23,
+      "last_seen_order": 23,
+      "aliases": [],
+      "kind": "object",
+      "status": "人类逃亡五步中的第三步，在外太空继续加速，飞向比邻星。"
+    },
+    {
+      "name": "流浪时代Ⅱ(减速)",
+      "first_seen_order": 23,
+      "last_seen_order": 23,
+      "aliases": [],
+      "kind": "object",
+      "status": "人类逃亡五步中的第四步，在中途使地球重新自转，掉转发动机方向，开始减速。"
+    },
+    {
+      "name": "新太阳时代",
+      "first_seen_order": 23,
+      "last_seen_order": 23,
+      "aliases": [],
+      "kind": "object",
+      "status": "人类逃亡五步中的第五步，地球泊入比邻星轨道，成为这颗恒星的卫星。"
+    },
+    {
+      "name": "人类移民过程",
+      "first_seen_order": 23,
+      "last_seen_order": 23,
+      "aliases": [],
+      "kind": "object",
+      "status": "整个移民过程将延续两千五百年时间，一百代人。"
+    },
+    {
+      "name": "星空",
+      "first_seen_order": 24,
+      "last_seen_order": 24,
+      "aliases": [],
+      "kind": "object",
+      "status": "在地球黑夜部分可见，美得令人心醉"
+    },
+    {
+      "name": "月球",
+      "first_seen_order": 25,
+      "last_seen_order": 25,
+      "aliases": [],
+      "kind": "object",
+      "status": "被安装行星发动机，推离地球轨道，产生巨大彗尾，使大海笼罩蓝光，群星看不见，移动产生引力潮汐使大海巨浪冲天"
+    },
+    {
+      "name": "月球行星发动机",
+      "first_seen_order": 25,
+      "last_seen_order": 25,
+      "aliases": [],
+      "kind": "object",
+      "status": "安装在月球上，产生巨大彗尾，使大海笼罩蓝光"
+    },
+    {
+      "name": "地球发动机光柱",
+      "first_seen_order": 26,
+      "last_seen_order": 75,
+      "aliases": [],
+      "kind": "object",
+      "status": "15年来一直垂直，现开始摆动，地球在做会合前最后的姿态调整。"
+    },
+    {
+      "name": "飞机",
+      "first_seen_order": 27,
+      "last_seen_order": 27,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角一行乘坐，从海上返回陆地，飞越太平洋"
+    },
+    {
+      "name": "校车",
+      "first_seen_order": 28,
+      "last_seen_order": 29,
+      "aliases": [],
+      "kind": "object",
+      "status": "载主角班级进入地下城，穿过高大隧洞，行驶约半小时后到达。"
+    },
+    {
+      "name": "学校教育",
+      "first_seen_order": 32,
+      "last_seen_order": 32,
+      "aliases": [],
+      "kind": "object",
+      "status": "集中在理工科，艺术和哲学教育压缩到最少。"
+    },
+    {
+      "name": "宗教",
+      "first_seen_order": 32,
+      "last_seen_order": 32,
+      "aliases": [],
+      "kind": "object",
+      "status": "所有宗教在一夜之间消失。"
+    },
+    {
+      "name": "历史课",
+      "first_seen_order": 32,
+      "last_seen_order": 32,
+      "aliases": [],
+      "kind": "object",
+      "status": "课本中前太阳时代的历史像伊甸园神话。"
+    },
+    {
+      "name": "全息星空",
+      "first_seen_order": 34,
+      "last_seen_order": 34,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于地下城家中天花板，主角母亲看腻，请求更换。"
+    },
+    {
+      "name": "全息森林",
+      "first_seen_order": 34,
+      "last_seen_order": 34,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于地下城家中四壁，主角母亲看腻，请求更换。"
+    },
+    {
+      "name": "飞行汽车",
+      "first_seen_order": 35,
+      "last_seen_order": 82,
+      "aliases": [],
+      "kind": "object",
+      "status": "悬停在5000米空中，由加代子驾驶，现正返回。"
+    },
+    {
+      "name": "海冰",
+      "first_seen_order": 36,
+      "last_seen_order": 102,
+      "aliases": [],
+      "kind": "object",
+      "status": "表面融化，受热不均发出巨响。"
+    },
+    {
+      "name": "亚洲大陆上的地球发动机",
+      "first_seen_order": 42,
+      "last_seen_order": 79,
+      "aliases": [],
+      "kind": "object",
+      "status": "离开木星后再次全功率开动，将不停运行500年加速地球，消耗亚洲大陆一半山脉作燃料。"
+    },
+    {
+      "name": "美洲大陆上的地球发动机",
+      "first_seen_order": 42,
+      "last_seen_order": 42,
+      "aliases": [],
+      "kind": "object",
+      "status": "全功率运行，使美洲大陆成为火箭喷口的护圈，导致高温可怕，草木生烟。"
+    },
+    {
+      "name": "地核中铁镍核心",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "kind": "object",
+      "status": "平衡被扰动，影响穿过古腾堡不连续面波及地幔"
+    },
+    {
+      "name": "古腾堡不连续面",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "kind": "object",
+      "status": "被地核扰动影响穿过"
+    },
+    {
+      "name": "地幔",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "kind": "object",
+      "status": "受地核扰动波及"
+    },
+    {
+      "name": "岩浆渗入灾难",
+      "first_seen_order": 44,
+      "last_seen_order": 45,
+      "aliases": [],
+      "kind": "object",
+      "status": "在F112市发生，地应力破坏城市北部屏障，岩浆流到达第四街区，封死公路出口。"
+    },
+    {
+      "name": "第六次变轨周期",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "kind": "object",
+      "status": "之后岩浆渗入灾难频繁发生"
+    },
+    {
+      "name": "危急法第五条",
+      "first_seen_order": 45,
+      "last_seen_order": 45,
+      "aliases": [],
+      "kind": "object",
+      "status": "撤离时需按此条款行事，具体内容未详述。"
+    },
+    {
+      "name": "地下公路",
+      "first_seen_order": 46,
+      "last_seen_order": 46,
+      "aliases": [],
+      "kind": "object",
+      "status": "两条通向外部，其中一条去年因加固屏障需要被堵死，另一条若堵死则只能通过升降梯逃命。"
+    },
+    {
+      "name": "升降梯",
+      "first_seen_order": 46,
+      "last_seen_order": 48,
+      "aliases": [],
+      "kind": "object",
+      "status": "载运量小，主角排队三个小时后才轮到跨进，撤离速度缓慢。"
+    },
+    {
+      "name": "联合政府危急法",
+      "first_seen_order": 46,
+      "last_seen_order": 46,
+      "aliases": [],
+      "kind": "object",
+      "status": "已安排好撤离事宜，无需争夺生存机会。"
+    },
+    {
+      "name": "机器人保育员",
+      "first_seen_order": 47,
+      "last_seen_order": 47,
+      "aliases": [],
+      "kind": "object",
+      "status": "抱着婴儿，位于撤离队伍最前端。"
+    },
+    {
+      "name": "硫磺味",
+      "first_seen_order": 48,
+      "last_seen_order": 48,
+      "aliases": [],
+      "kind": "object",
+      "status": "主角跨进升降梯时闻到浓烈硫磺味，暗示岩浆渗入临近。"
+    },
+    {
+      "name": "岩浆",
+      "first_seen_order": 49,
+      "last_seen_order": 49,
+      "aliases": [],
+      "kind": "object",
+      "status": "在500米深地下吞没整座城市，涌入市中心广场，高温上千度。"
+    },
+    {
+      "name": "联合政府",
+      "first_seen_order": 50,
+      "last_seen_order": 95,
+      "aliases": [],
+      "kind": "object",
+      "status": "决定投降，以避免地球发动机失控导致灾难，其成员包括最高执政官和普通列兵，共五千多人。"
+    },
+    {
+      "name": "奥运会",
+      "first_seen_order": 50,
+      "last_seen_order": 50,
+      "aliases": [],
+      "kind": "object",
+      "status": "中断两个世纪后恢复，包括机动冰橇拉力赛项目。"
+    },
+    {
+      "name": "机动冰橇拉力赛",
+      "first_seen_order": 50,
+      "last_seen_order": 50,
+      "aliases": [],
+      "kind": "object",
+      "status": "奥运会项目，选手驾驶机动冰橇从上海出发，横穿封冻太平洋至纽约。"
+    },
+    {
+      "name": "全息图像",
+      "first_seen_order": 53,
+      "last_seen_order": 53,
+      "aliases": [],
+      "kind": "object",
+      "status": "显示全球登记结婚的几万个圆点，供加代子抽签选择"
+    },
+    {
+      "name": "自由女神像",
+      "first_seen_order": 54,
+      "last_seen_order": 54,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于纽约港，被遥远太阳的微弱光芒镀上金辉。"
+    },
+    {
+      "name": "太空舰队",
+      "first_seen_order": 55,
+      "last_seen_order": 56,
+      "aliases": [],
+      "kind": "object",
+      "status": "巡航范围约一百五十万公里，力量有限，将使用反物质炸弹清除小行星带石块。"
+    },
+    {
+      "name": "反物质炸弹",
+      "first_seen_order": 56,
+      "last_seen_order": 57,
+      "aliases": [],
+      "kind": "object",
+      "status": "在太空中不断击中小行星，产生湮灭强光，此起彼伏闪现。"
+    },
+    {
+      "name": "小行星带石块",
+      "first_seen_order": 56,
+      "last_seen_order": 56,
+      "aliases": [],
+      "kind": "object",
+      "status": "大的像一座大山，五千万吨级热核炸弹只能打出小坑，地球将从中穿过。"
+    },
+    {
+      "name": "火流星",
+      "first_seen_order": 58,
+      "last_seen_order": 59,
+      "aliases": [],
+      "kind": "object",
+      "status": "体积比别的大出许多，疾驰过大半个天空后坠入冰海，激起上百米浪，天空中布满火流星，如红发恶魔从太空中某一点同时迸发。"
+    },
+    {
+      "name": "流星",
+      "first_seen_order": 60,
+      "last_seen_order": 60,
+      "aliases": [],
+      "kind": "object",
+      "status": "击中海岸附近海面，产生白色蘑菇云，涌浪破碎冰层。"
+    },
+    {
+      "name": "冰层",
+      "first_seen_order": 60,
+      "last_seen_order": 60,
+      "aliases": [],
+      "kind": "object",
+      "status": "被涌浪震碎，显出海浪形状。"
+    },
+    {
+      "name": "黑色屏障",
+      "first_seen_order": 61,
+      "last_seen_order": 61,
+      "aliases": [],
+      "kind": "object",
+      "status": "出现在天海连线处，像一堵横在天边的长墙，墙头镶着一线白边"
+    },
+    {
+      "name": "地下城铁门",
+      "first_seen_order": 62,
+      "last_seen_order": 62,
+      "aliases": [],
+      "kind": "object",
+      "status": "已关闭，隔绝地面巨浪与流星撞击的震动"
+    },
+    {
+      "name": "巨浪",
+      "first_seen_order": 62,
+      "last_seen_order": 62,
+      "aliases": [],
+      "kind": "object",
+      "status": "百米高，正滚过夏威夷及各大陆，由流星撞击引发"
+    },
+    {
+      "name": "流星撞击",
+      "first_seen_order": 62,
+      "last_seen_order": 62,
+      "aliases": [],
+      "kind": "object",
+      "status": "持续一个星期，不断击中地面，产生直达灵魂深处的震动"
+    },
+    {
+      "name": "天空",
+      "first_seen_order": 62,
+      "last_seen_order": 63,
+      "aliases": [],
+      "kind": "object",
+      "status": "灰色，高层大气弥漫小行星撞击灰尘，星星和太阳消失，如宇宙下大雾"
+    },
+    {
+      "name": "冰面",
+      "first_seen_order": 63,
+      "last_seen_order": 63,
+      "aliases": [],
+      "kind": "object",
+      "status": "封冻，覆盖撞击尘，呈灰色"
+    },
+    {
+      "name": "城市幸存高楼",
+      "first_seen_order": 63,
+      "last_seen_order": 63,
+      "aliases": [],
+      "kind": "object",
+      "status": "形单影只立在冰面上，挂着长冰凌柱"
+    },
+    {
+      "name": "黑夜",
+      "first_seen_order": 64,
+      "last_seen_order": 64,
+      "aliases": [],
+      "kind": "object",
+      "status": "人类所见过的最黑的黑夜，无一丝光线，飞机仿佛潜行在墨汁的海洋中。"
+    },
+    {
+      "name": "地球发动机光芒",
+      "first_seen_order": 68,
+      "last_seen_order": 68,
+      "aliases": [],
+      "kind": "object",
+      "status": "西半球被陨石击毁三分之一，东半球完好，功率足以完成逃逸航行，呈朦胧蓝光出现在撞击尘埃夜空中。"
+    },
+    {
+      "name": "撞击尘埃",
+      "first_seen_order": 70,
+      "last_seen_order": 71,
+      "aliases": [],
+      "kind": "object",
+      "status": "三年后有所消散，人类最后一次通过近日点"
+    },
+    {
+      "name": "木星",
+      "first_seen_order": 74,
+      "last_seen_order": 74,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球将与木星在几乎相撞的距离上擦身而过，其巨大引力将拉动地球达到逃逸速度。"
+    },
+    {
+      "name": "航行委员会",
+      "first_seen_order": 74,
+      "last_seen_order": 74,
+      "aliases": [],
+      "kind": "object",
+      "status": "制定计划，使地球第15圈公转轨道极扁，远日点到达木星轨道，利用木星引力使地球达到逃逸速度。"
+    },
+    {
+      "name": "山脉",
+      "first_seen_order": 79,
+      "last_seen_order": 79,
+      "aliases": [],
+      "kind": "object",
+      "status": "亚洲大陆上一半的山脉将被用作地球发动机燃料消耗掉。"
+    },
+    {
+      "name": "天文望远镜",
+      "first_seen_order": 81,
+      "last_seen_order": 81,
+      "aliases": [],
+      "kind": "object",
+      "status": "业余爱好者用，加代子从车后取出，用于观测太阳，与车内计算机连接采集影像。"
+    },
+    {
+      "name": "计算机",
+      "first_seen_order": 81,
+      "last_seen_order": 81,
+      "aliases": [],
+      "kind": "object",
+      "status": "车内计算机，与望远镜连接，用于图像采集和比较。"
+    },
+    {
+      "name": "太阳影像",
+      "first_seen_order": 81,
+      "last_seen_order": 81,
+      "aliases": [],
+      "kind": "object",
+      "status": "加代子采集的当前太阳影像与四个世纪前的太阳影像，经比较参数完全一致。"
+    },
+    {
+      "name": "其他飞行汽车",
+      "first_seen_order": 82,
+      "last_seen_order": 82,
+      "aliases": [],
+      "kind": "object",
+      "status": "在主角和加代子上方及下方悬停，车窗中伸出望远镜对着太阳。"
+    },
+    {
+      "name": "民间组织",
+      "first_seen_order": 83,
+      "last_seen_order": 83,
+      "aliases": [],
+      "kind": "object",
+      "status": "向太阳发射了一组探测器，三个月后穿过日球，数据证实太阳无变化。"
+    },
+    {
+      "name": "探测器",
+      "first_seen_order": 83,
+      "last_seen_order": 83,
+      "aliases": [],
+      "kind": "object",
+      "status": "民间组织发射，三个月后穿过日球，发回数据证实太阳与四个世纪前无变化。"
+    },
+    {
+      "name": "叛乱",
+      "first_seen_order": 87,
+      "last_seen_order": 87,
+      "aliases": [],
+      "kind": "object",
+      "status": "三天后在各大陆同时爆发。"
+    },
+    {
+      "name": "地球驾驶室",
+      "first_seen_order": 90,
+      "last_seen_order": 90,
+      "aliases": [],
+      "kind": "object",
+      "status": "位于控制中心中心。"
+    },
+    {
+      "name": "激光束",
+      "first_seen_order": 90,
+      "last_seen_order": 90,
+      "aliases": [],
+      "kind": "object",
+      "status": "烧焦主角手臂的武器。"
+    },
+    {
+      "name": "钢铁通道",
+      "first_seen_order": 92,
+      "last_seen_order": 92,
+      "aliases": [],
+      "kind": "object",
+      "status": "错综复杂，通向地球驾驶室，沿途有分支。"
+    },
+    {
+      "name": "钢铁大门",
+      "first_seen_order": 92,
+      "last_seen_order": 92,
+      "aliases": [],
+      "kind": "object",
+      "status": "高得望不到顶，位于地球驾驶室前，被打开。"
+    },
+    {
+      "name": "巨型全息图",
+      "first_seen_order": 93,
+      "last_seen_order": 93,
+      "aliases": [],
+      "kind": "object",
+      "status": "显示太阳系模拟，太阳和行星按真实比例缩小如萤火虫，红色螺旋线为地球航线，绿色线为未完成路程，另有虚拟屏幕显示数据。"
+    },
+    {
+      "name": "红色螺旋线",
+      "first_seen_order": 93,
+      "last_seen_order": 93,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球航线，从太阳光点扩展，最外点变绿，代表已完成路程。"
+    },
+    {
+      "name": "绿色线",
+      "first_seen_order": 93,
+      "last_seen_order": 93,
+      "aliases": [],
+      "kind": "object",
+      "status": "地球未完成的路程，从头顶掠过，消失在星海深处。"
+    },
+    {
+      "name": "虚拟屏幕",
+      "first_seen_order": 93,
+      "last_seen_order": 93,
+      "aliases": [],
+      "kind": "object",
+      "status": "闪亮灰尘状，飘近可见复杂数字和曲线。"
+    },
+    {
+      "name": "地球驾驶台",
+      "first_seen_order": 94,
+      "last_seen_order": 94,
+      "aliases": [],
+      "kind": "object",
+      "status": "漂浮在黑色空间中的银白色小行星，本身是一个广场，上面站着五千多人，包括联合政府主要成员和星际移民委员会大部分成员。"
+    },
+    {
+      "name": "控制中心密封门",
+      "first_seen_order": 96,
+      "last_seen_order": 96,
+      "aliases": [],
+      "kind": "object",
+      "status": "隆隆开启，五千多名最后的地球派走出，在叛军押送下向海岸走去。"
+    },
+    {
+      "name": "太阳氦闪",
+      "first_seen_order": 101,
+      "last_seen_order": 101,
+      "aliases": [],
+      "kind": "object",
+      "status": "爆发，强光淹没星空，成为宇宙中心，位于主角盯着的方向。"
+    },
+    {
+      "name": "极光",
+      "first_seen_order": 102,
+      "last_seen_order": 102,
+      "aliases": [],
+      "kind": "object",
+      "status": "由强烈太阳风产生，在苍穹中飘动。"
+    }
+  ],
+  "locations": [
+    {
+      "name": "地球",
+      "first_seen_order": 2,
+      "last_seen_order": 72,
+      "aliases": [],
+      "note": "在太阳系四十五亿年进化史被总结，太阳跌入地平线后，黑暗降临。"
+    },
+    {
+      "name": "亚洲大陆",
+      "first_seen_order": 3,
+      "last_seen_order": 42,
+      "aliases": [],
+      "note": "处于宁静而漫长的黑夜之中，地球发动机停止运行。"
+    },
+    {
+      "name": "美洲大陆",
+      "first_seen_order": 3,
+      "last_seen_order": 42,
+      "aliases": [],
+      "note": "因太阳处于西半球且发动机全功率运行，高温可怕，草木生烟。"
+    },
+    {
+      "name": "北半球",
+      "first_seen_order": 4,
+      "last_seen_order": 4,
+      "aliases": [],
+      "note": "被地球发动机照亮，南半球人到此可能精神失常"
+    },
+    {
+      "name": "太行山",
+      "first_seen_order": 8,
+      "last_seen_order": 8,
+      "aliases": [],
+      "note": "位于石家庄附近，与地球发动机相比如同小土丘"
+    },
+    {
+      "name": "城市摩天大楼",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "note": "尖顶伸出海面，退潮时海水从窗子流出形成瀑布，被潮汐吞没的北半球大城市之一"
+    },
+    {
+      "name": "北半球大城市",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "note": "三分之二被地球发动机加速造成的潮汐吞没"
+    },
+    {
+      "name": "极地冰川",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "note": "被发动机带来的全球高温融化，加剧大洪水"
+    },
+    {
+      "name": "南半球",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "note": "受大洪水波及"
+    },
+    {
+      "name": "上海",
+      "first_seen_order": 13,
+      "last_seen_order": 50,
+      "aliases": [],
+      "note": "机动冰橇拉力赛起点。"
+    },
+    {
+      "name": "大海",
+      "first_seen_order": 13,
+      "last_seen_order": 27,
+      "aliases": [],
+      "note": "笼罩蓝光，巨浪冲天，因月球引力潮汐"
+    },
+    {
+      "name": "教室大舱",
+      "first_seen_order": 13,
+      "last_seen_order": 13,
+      "aliases": [],
+      "note": "船上用作教室的大舱，主角集合于此听小星老师宣布看日出"
+    },
+    {
+      "name": "半人马座比邻星",
+      "first_seen_order": 18,
+      "last_seen_order": 24,
+      "aliases": [],
+      "note": "被指认为人类新家，是黑夜中不动的星星，希望的象征"
+    },
+    {
+      "name": "月球",
+      "first_seen_order": 27,
+      "last_seen_order": 27,
+      "aliases": [],
+      "note": "被推离地球轨道，产生巨大彗尾，大海笼罩蓝光"
+    },
+    {
+      "name": "地下城",
+      "first_seen_order": 28,
+      "last_seen_order": 47,
+      "aliases": [],
+      "note": "岩浆渗入灾难发生，人们按年龄排队撤离，秩序井然。"
+    },
+    {
+      "name": "隧洞",
+      "first_seen_order": 28,
+      "last_seen_order": 29,
+      "aliases": [],
+      "note": "高大，通往地下城，校车穿过其中。"
+    },
+    {
+      "name": "远日点",
+      "first_seen_order": 33,
+      "last_seen_order": 33,
+      "aliases": [],
+      "note": "地球距太阳最远时，人们有虚幻安全感，如节日。"
+    },
+    {
+      "name": "冰冻海面",
+      "first_seen_order": 33,
+      "last_seen_order": 33,
+      "aliases": [],
+      "note": "封冻的大海，人们在上面狂欢，放焰火。"
+    },
+    {
+      "name": "海",
+      "first_seen_order": 35,
+      "last_seen_order": 35,
+      "aliases": [],
+      "note": "冰原未融化，受热不均发出巨响，类似地震。"
+    },
+    {
+      "name": "大地",
+      "first_seen_order": 36,
+      "last_seen_order": 70,
+      "aliases": [],
+      "note": "分布着残留海水形成的冰冻湖泊，无绿色，气温难以回升。"
+    },
+    {
+      "name": "城市中心广场",
+      "first_seen_order": 39,
+      "last_seen_order": 39,
+      "aliases": [],
+      "note": "有喷泉的圆形水池，池水蓝莹莹，穹顶有梦幻般的光波纹。"
+    },
+    {
+      "name": "海滩",
+      "first_seen_order": 40,
+      "last_seen_order": 40,
+      "aliases": [],
+      "note": "出现在灵儿展示的全息景象中，落日下，有棕榈树、白浪、金色沙滩和情侣，被描述为外面不太热的好去处。"
+    },
+    {
+      "name": "各大陆",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "note": "地热逸出，火山横行，对地下城市构成致命威胁"
+    },
+    {
+      "name": "市政厅",
+      "first_seen_order": 44,
+      "last_seen_order": 44,
+      "aliases": [],
+      "note": "广播警报"
+    },
+    {
+      "name": "F112市",
+      "first_seen_order": 45,
+      "last_seen_order": 46,
+      "aliases": [],
+      "note": "岩浆渗入灾难发生，主角听到警报，地下城暂无异常，但危险在于只有两条通向外部的地下公路，其中一条已堵死。"
+    },
+    {
+      "name": "中心广场",
+      "first_seen_order": 45,
+      "last_seen_order": 47,
+      "aliases": [],
+      "note": "人们按年龄排起长队，靠近电梯口，有机器人保育员抱着的婴儿、幼儿园孩子、小学生等。"
+    },
+    {
+      "name": "市中心广场",
+      "first_seen_order": 49,
+      "last_seen_order": 86,
+      "aliases": [],
+      "note": "演讲者在此煽动民众，分发武器，局势紧张。"
+    },
+    {
+      "name": "纽约",
+      "first_seen_order": 50,
+      "last_seen_order": 53,
+      "aliases": [],
+      "note": "机动冰橇拉力赛终点，裁判已离开，民政局官员等待主角与加代子"
+    },
+    {
+      "name": "太平洋",
+      "first_seen_order": 50,
+      "last_seen_order": 80,
+      "aliases": [],
+      "note": "冰封的洋面，被太阳投下微弱冷光。"
+    },
+    {
+      "name": "冰原",
+      "first_seen_order": 51,
+      "last_seen_order": 98,
+      "aliases": [],
+      "note": "群星出现在冰原之上，所有地球发动机已关闭。"
+    },
+    {
+      "name": "星空",
+      "first_seen_order": 51,
+      "last_seen_order": 76,
+      "aliases": [],
+      "note": "在地球发动机全部关闭后重新可见。"
+    },
+    {
+      "name": "曼哈顿摩天大楼群",
+      "first_seen_order": 54,
+      "last_seen_order": 54,
+      "aliases": [],
+      "note": "已无人居住，在微弱阳光下投下长长影子于纽约港冰面。"
+    },
+    {
+      "name": "纽约港",
+      "first_seen_order": 54,
+      "last_seen_order": 54,
+      "aliases": [],
+      "note": "冰面寂静，被摩天大楼影子覆盖。"
+    },
+    {
+      "name": "小行星带",
+      "first_seen_order": 54,
+      "last_seen_order": 55,
+      "aliases": [],
+      "note": "地球航线将从中穿过，舰队可用激光和核弹清除航线上的小石块，但大石块需舰队对付。"
+    },
+    {
+      "name": "夏威夷",
+      "first_seen_order": 58,
+      "last_seen_order": 58,
+      "aliases": [],
+      "note": "飞机紧急降落的目的地。"
+    },
+    {
+      "name": "檀香山",
+      "first_seen_order": 59,
+      "last_seen_order": 59,
+      "aliases": [],
+      "note": "主角与加代子在此降落，由当地政府安排去地下城。"
+    },
+    {
+      "name": "冰海",
+      "first_seen_order": 59,
+      "last_seen_order": 59,
+      "aliases": [],
+      "note": "被火流星击中，出现白点扩散成圆圈，浪高上百米但冰面使其衰减。"
+    },
+    {
+      "name": "204号门",
+      "first_seen_order": 60,
+      "last_seen_order": 60,
+      "aliases": [],
+      "note": "原定入口，因时间紧迫被放弃。"
+    },
+    {
+      "name": "地下城入口",
+      "first_seen_order": 61,
+      "last_seen_order": 61,
+      "aliases": [],
+      "note": "汽车在此停下，有士兵把守"
+    },
+    {
+      "name": "天空",
+      "first_seen_order": 70,
+      "last_seen_order": 102,
+      "aliases": [],
+      "note": "出现微微蓝色，后出现极光。"
+    },
+    {
+      "name": "木星",
+      "first_seen_order": 75,
+      "last_seen_order": 78,
+      "aliases": [],
+      "note": "占据天空，地球冲出其引力，达到逃逸速度，开始流浪时代。"
+    },
+    {
+      "name": "地球表面",
+      "first_seen_order": 80,
+      "last_seen_order": 80,
+      "aliases": [],
+      "note": "城市和植被荡然无存，变成火星一样的荒漠，有白色盐渍斑块。"
+    },
+    {
+      "name": "大城市废墟",
+      "first_seen_order": 80,
+      "last_seen_order": 80,
+      "aliases": [],
+      "note": "曾是爷爷和爸爸度过一生的城市，现为钢筋外露的残骸，在光柱蓝光中拖长影。"
+    },
+    {
+      "name": "养育中心",
+      "first_seen_order": 84,
+      "last_seen_order": 86,
+      "aliases": [],
+      "note": "主角与加代子将儿子送入其中。"
+    },
+    {
+      "name": "美洲",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "相继沦陷，被叛军控制"
+    },
+    {
+      "name": "非洲",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "相继沦陷，被叛军控制"
+    },
+    {
+      "name": "大洋洲",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "相继沦陷，被叛军控制"
+    },
+    {
+      "name": "南极洲",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "相继沦陷，被叛军控制"
+    },
+    {
+      "name": "东亚",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "联合政府防线所在，后防线崩溃"
+    },
+    {
+      "name": "中亚",
+      "first_seen_order": 89,
+      "last_seen_order": 89,
+      "aliases": [],
+      "note": "联合政府防线所在，后防线崩溃"
+    },
+    {
+      "name": "控制中心",
+      "first_seen_order": 90,
+      "last_seen_order": 90,
+      "aliases": [],
+      "note": "中等城市大小，中心是地球驾驶室，主角所在伤兵收容站位于此处。"
+    },
+    {
+      "name": "伤兵收容站",
+      "first_seen_order": 90,
+      "last_seen_order": 90,
+      "aliases": [],
+      "note": "位于控制中心内，主角与其他伤员在此，众人喝得烂醉。"
+    },
+    {
+      "name": "地球驾驶室",
+      "first_seen_order": 92,
+      "last_seen_order": 95,
+      "aliases": [],
+      "note": "联合政府控制中心的核心区域，现被叛军攻入，最高执政官在此发表投降演说。"
+    },
+    {
+      "name": "冰面",
+      "first_seen_order": 99,
+      "last_seen_order": 100,
+      "aliases": [],
+      "note": "覆盖撞击尘，呈灰色，最后的地球派在此被处决。"
+    },
+    {
+      "name": "冰原、海岸和岸上的人群",
+      "first_seen_order": 101,
+      "last_seen_order": 101,
+      "aliases": [],
+      "note": "笼罩在强烈白光中，清晰可见。"
+    },
+    {
+      "name": "水星",
+      "first_seen_order": 103,
+      "last_seen_order": 103,
+      "aliases": [],
+      "note": "在亿度辐射中化为一缕轻烟。"
+    },
+    {
+      "name": "火星",
+      "first_seen_order": 103,
+      "last_seen_order": 103,
+      "aliases": [],
+      "note": "在亿度辐射中化为一缕轻烟。"
+    },
+    {
+      "name": "金星",
+      "first_seen_order": 103,
+      "last_seen_order": 103,
+      "aliases": [],
+      "note": "在亿度辐射中化为一缕轻烟。"
+    }
+  ],
+  "plotlines": [
+    {
+      "title": "地球发动机带来的酷热与暴雨",
+      "status": "open",
+      "opened_order": 5,
+      "closed_order": null,
+      "key_orders": [
+        5
+      ],
+      "summary": "发动机导致户外高温达七八十度，必须穿冷却服，暴雨中光柱散射形成恐怖景象，爷爷被烫伤。"
+    },
+    {
+      "title": "小学环球旅行课程",
+      "status": "open",
+      "opened_order": 7,
+      "closed_order": null,
+      "key_orders": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        18,
+        24
+      ],
+      "summary": "船航行至地球黑夜部分，孩子们第一次看到星空，小星老师指向半人马座比邻星，众人落泪，将其视为新家和希望。"
+    },
+    {
+      "title": "环球旅行课程",
+      "status": "open",
+      "opened_order": 13,
+      "closed_order": null,
+      "key_orders": [
+        13,
+        14,
+        15
+      ],
+      "summary": "小星老师讲述前太阳时代人类对太阳的敬畏与赞美，对比当前对太阳的恐惧，孩子们在甲板上等待日出。"
+    },
+    {
+      "title": "等待日出",
+      "status": "open",
+      "opened_order": 16,
+      "closed_order": null,
+      "key_orders": [
+        16
+      ],
+      "summary": "孩子们在甲板上看到太阳升起，恐惧窒息，主角再次想起死亡谜语，认为死亡是闪电的颜色。"
+    },
+    {
+      "title": "太阳氦闪危机",
+      "status": "open",
+      "opened_order": 17,
+      "closed_order": null,
+      "key_orders": [
+        17,
+        18,
+        37
+      ],
+      "summary": "随着地球接近太阳，人们恐惧加深，母亲从钱德勒博士夫人处得知氦聚集加速，担忧可能来不及。"
+    },
+    {
+      "title": "飞船派与地球派之争",
+      "status": "open",
+      "opened_order": 18,
+      "closed_order": null,
+      "key_orders": [
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "summary": "小星老师反驳飞船派，指出半人马座无行星，飞船生态系统无法维持，强调地球规模生态系统的必要性。"
+    },
+    {
+      "title": "人类逃亡五步计划",
+      "status": "open",
+      "opened_order": 23,
+      "closed_order": null,
+      "key_orders": [
+        23
+      ],
+      "summary": "主角阐述人类逃亡五步计划，包括刹车、逃逸、流浪加速、流浪减速、新太阳时代，历时两千五百年。"
+    },
+    {
+      "title": "月球被推离地球轨道",
+      "status": "open",
+      "opened_order": 25,
+      "closed_order": null,
+      "key_orders": [
+        25
+      ],
+      "summary": "月球安装行星发动机，产生巨大彗尾，大海笼罩蓝光，引力潮汐使巨浪冲天，主角改乘飞机回家。"
+    },
+    {
+      "title": "启航之日到来",
+      "status": "open",
+      "opened_order": 25,
+      "closed_order": null,
+      "key_orders": [
+        25,
+        26,
+        27
+      ],
+      "summary": "地球发动机全功率运行，光柱变亮变直，地球启航，形成巨大彗尾。"
+    },
+    {
+      "title": "爷爷去世",
+      "status": "closed",
+      "opened_order": 26,
+      "closed_order": 27,
+      "key_orders": [
+        26,
+        27
+      ],
+      "summary": "爷爷因烫伤感染去世，临终念叨“地球，我的流浪地球啊”。"
+    },
+    {
+      "title": "搬入地下城",
+      "status": "open",
+      "opened_order": 28,
+      "closed_order": null,
+      "key_orders": [
+        28,
+        29,
+        30,
+        32
+      ],
+      "summary": "主角在地下城读完小学并升入中学，学校教育集中于理工科，艺术哲学压缩，宗教消失，历史课将前太阳时代视为神话。"
+    },
+    {
+      "title": "地球发动机加速过程讨论",
+      "status": "open",
+      "opened_order": 31,
+      "closed_order": null,
+      "key_orders": [
+        31
+      ],
+      "summary": "灵儿向孩子们解释地球绕太阳轨道变扁、远离太阳变冷，主角补充发动机全功率运行使地球成火箭喷口护圈，情绪烦躁。"
+    },
+    {
+      "title": "远日点家庭海边之行",
+      "status": "open",
+      "opened_order": 33,
+      "closed_order": null,
+      "key_orders": [
+        33,
+        35,
+        36
+      ],
+      "summary": "海冰开裂，海水喷涌，大地回春，野草花朵怒放，生命焕发活力。"
+    },
+    {
+      "title": "父亲回归家庭",
+      "status": "open",
+      "opened_order": 34,
+      "closed_order": null,
+      "key_orders": [
+        34
+      ],
+      "summary": "父亲从小星老师处回来，母亲平静接受，父亲转达小星老师对主角的称赞，全家生活恢复常态。"
+    },
+    {
+      "title": "灵儿邀主角去旅行",
+      "status": "open",
+      "opened_order": 39,
+      "closed_order": null,
+      "key_orders": [
+        39,
+        40,
+        41
+      ],
+      "summary": "灵儿以肥皂泡比喻地球脆弱，劝主角面对氦闪时留在地面，主角未同去，灵儿与阿东同行后失踪。"
+    },
+    {
+      "title": "地球掠过近日点",
+      "status": "open",
+      "opened_order": 42,
+      "closed_order": null,
+      "key_orders": [
+        42
+      ],
+      "summary": "地球高速掠过近日点，第六次向远日点升去，人们神经松弛。亚洲发动机停转，美洲全功率运行，主角处黑夜宁静。"
+    },
+    {
+      "title": "地球变轨加速与人类恐惧循环",
+      "status": "open",
+      "opened_order": 43,
+      "closed_order": null,
+      "key_orders": [
+        43
+      ],
+      "summary": "地球年复一年变轨加速，人类在远日点放松、近日点恐惧，谣言四起，主角在交替恐惧中度过少年时代。"
+    },
+    {
+      "title": "逃逸时代大灾难接踵而至",
+      "status": "open",
+      "opened_order": 43,
+      "closed_order": null,
+      "key_orders": [
+        43
+      ],
+      "summary": "进入逃逸时代，大灾难接连发生，具体事件待后续展开。"
+    },
+    {
+      "title": "岩浆渗入灾难频繁发生",
+      "status": "open",
+      "opened_order": 44,
+      "closed_order": null,
+      "key_orders": [
+        44,
+        45,
+        46
+      ],
+      "summary": "主角环视地下城通道，意识到只有两条地下公路，其中一条已堵死，若另一条也堵死，只能通过升降梯逃生，但载运量小，需按危急法第五条行动。"
+    },
+    {
+      "title": "岩浆渗入地下城灾难",
+      "status": "open",
+      "opened_order": 47,
+      "closed_order": null,
+      "key_orders": [
+        47,
+        48,
+        49
+      ],
+      "summary": "主角撤离后，岩浆吞没城市，母亲与一万八千人未能撤出，遇难。"
+    },
+    {
+      "title": "奥运会恢复",
+      "status": "open",
+      "opened_order": 50,
+      "closed_order": null,
+      "key_orders": [
+        50,
+        52
+      ],
+      "summary": "主角在机动冰橇拉力赛中与加代子同行，经过夏威夷后看到曙光，向联合政府民政部申请结婚。"
+    },
+    {
+      "title": "主角与山彬加代子相遇",
+      "status": "open",
+      "opened_order": 52,
+      "closed_order": null,
+      "key_orders": [
+        52,
+        53,
+        54
+      ],
+      "summary": "主角与加代子在纽约完成结婚登记，加代子抽签决定生育权，官员赠房，主角感慨时代苦难。"
+    },
+    {
+      "title": "地球穿越小行星带",
+      "status": "open",
+      "opened_order": 55,
+      "closed_order": null,
+      "key_orders": [
+        55,
+        56,
+        57,
+        58,
+        59,
+        62,
+        71
+      ],
+      "summary": "撞击尘埃三年后消散，人类最后一次通过近日点，经历最快日出日落，最短白天不足一小时。"
+    },
+    {
+      "title": "主角与加代子返回亚洲的旅行",
+      "status": "open",
+      "opened_order": 64,
+      "closed_order": null,
+      "key_orders": [
+        64,
+        68
+      ],
+      "summary": "飞机前方出现地球发动机的蓝光，主角感到希望，男人被女人劝慰后流泪，决定活下去。"
+    },
+    {
+      "title": "父亲牺牲",
+      "status": "open",
+      "opened_order": 69,
+      "closed_order": null,
+      "key_orders": [
+        69
+      ],
+      "summary": "主角与加代子到太空舰队基地找父亲，却只见到追授的勋章，父亲在清除小行星时被碎片击中牺牲。"
+    },
+    {
+      "title": "地球飞向木星",
+      "status": "open",
+      "opened_order": 74,
+      "closed_order": null,
+      "key_orders": [
+        74,
+        75
+      ],
+      "summary": "离开近日点后两个月肉眼可见木星，光柱开始摆动，地球做会合前姿态调整，木星沉入地平线下，两颗行星正在交会。"
+    },
+    {
+      "title": "地球与木星交会",
+      "status": "open",
+      "opened_order": 76,
+      "closed_order": null,
+      "key_orders": [
+        76,
+        77
+      ],
+      "summary": "木星占据天空，地球冲出引力，达到逃逸速度，开始流浪时代。"
+    },
+    {
+      "title": "流浪时代开始",
+      "status": "open",
+      "opened_order": 77,
+      "closed_order": null,
+      "key_orders": [
+        77,
+        78
+      ],
+      "summary": "地球冲出木星引力，达到逃逸速度，飞向外太空，流浪时代正式开始。"
+    },
+    {
+      "title": "主角儿子出生",
+      "status": "open",
+      "opened_order": 77,
+      "closed_order": null,
+      "key_orders": [
+        77,
+        78
+      ],
+      "summary": "在木星暗红色阴影下，主角的儿子在地层深处出生，新生命开启。"
+    },
+    {
+      "title": "地球发动机持续加速",
+      "status": "open",
+      "opened_order": 79,
+      "closed_order": null,
+      "key_orders": [
+        79
+      ],
+      "summary": "离开木星后，亚洲大陆一万多台发动机全功率运行500年，消耗一半山脉作燃料，持续加速地球。"
+    },
+    {
+      "title": "人类从死亡恐惧中解脱",
+      "status": "open",
+      "opened_order": 79,
+      "closed_order": null,
+      "key_orders": [
+        79
+      ],
+      "summary": "从四个多世纪氦闪死亡的恐惧中解脱，人们长出一口气，但预料中的狂欢并未出现。"
+    },
+    {
+      "title": "地球表面荒漠化",
+      "status": "open",
+      "opened_order": 80,
+      "closed_order": null,
+      "key_orders": [
+        80
+      ],
+      "summary": "洪水和小行星撞击摧毁地面一切，城市和植被荡然无存，地球表面变成火星般的荒漠。"
+    },
+    {
+      "title": "加代子心神不定",
+      "status": "open",
+      "opened_order": 80,
+      "closed_order": null,
+      "key_orders": [
+        80
+      ],
+      "summary": "加代子常独自去西半球旅行，心神不定，最终拉主角同去。"
+    },
+    {
+      "title": "太阳无变化谣言蔓延",
+      "status": "open",
+      "opened_order": 83,
+      "closed_order": null,
+      "key_orders": [
+        83,
+        84,
+        85,
+        86
+      ],
+      "summary": "演讲者在市中心广场煽动民众，宣称联合政府编造太阳爆发骗局以建立独裁帝国，市民接受武器，局势紧张升级。"
+    },
+    {
+      "title": "叛乱爆发",
+      "status": "open",
+      "opened_order": 87,
+      "closed_order": null,
+      "key_orders": [
+        87,
+        88,
+        89
+      ],
+      "summary": "美洲、非洲、大洋洲和南极洲相继沦陷，叛军包围东亚和中亚，联合政府收缩防线死守地球发动机。双方相持三个月后，联合政府十二个集团军倒戈，防线崩溃，联合政府与不到十万"
+    },
+    {
+      "title": "主角加入联合政府军队并受伤",
+      "status": "open",
+      "opened_order": 90,
+      "closed_order": null,
+      "key_orders": [
+        90,
+        91
+      ],
+      "summary": "主角在控制中心伤兵收容站，手臂被激光束烧焦，得知加代子阵亡，与众人醉酒自责。"
+    },
+    {
+      "title": "联合政府军队陷入重围",
+      "status": "open",
+      "opened_order": 90,
+      "closed_order": null,
+      "key_orders": [
+        90,
+        91
+      ],
+      "summary": "控制中心被围，主角与士兵们醉酒度日，对外面战事不感兴趣，有人指出他们在自责，站到了反人类一边。"
+    },
+    {
+      "title": "主角与伤兵们冲向地球驾驶室",
+      "status": "open",
+      "opened_order": 92,
+      "closed_order": null,
+      "key_orders": [
+        92,
+        93,
+        94,
+        95,
+        96
+      ],
+      "summary": "控制中心密封门开启，最后的地球派被押送走向海岸，遭叛军和民众唾弃与攻击。"
+    },
+    {
+      "title": "最后的地球派被处决",
+      "status": "open",
+      "opened_order": 98,
+      "closed_order": null,
+      "key_orders": [
+        98,
+        100
+      ],
+      "summary": "主角目睹地球派在冰面上冻死，内心产生快感，唱起《我的太阳》，望向太阳方向。"
+    },
+    {
+      "title": "太阳氦闪爆发",
+      "status": "closed",
+      "opened_order": 101,
+      "closed_order": 103,
+      "key_orders": [
+        101,
+        102,
+        103
+      ],
+      "summary": "太阳变为红巨星，不再发光发热，太阳死了。地球派被处决的悲剧以太阳爆发终结。"
+    }
+  ],
   "recent": [
     {
       "order": 99,
-      "text": "我能想像出严寒像无数把尖刀刺进他们的身体，他们的血液在凝固，生命从他们的体内一点点流走，这想像中的感觉变成一种快感，传遍……"
+      "text": "主角目睹小女孩用冰块砸向被押送的地球派老者。"
     },
     {
       "order": 100,
-      "text": "啊，我的太阳，生命之母，万物之父，我的大神，我的上帝！还有什么比您更稳定，还有什么比您更永恒"
+      "text": "主角目睹小女孩用冰块砸向被押送的地球派老者。"
     },
     {
       "order": 101,
-      "text": "我的眼睛突然什么都看不见了，几秒钟后，视力渐渐恢复，冰原、海岸和岸上的人群又在眼前慢慢显影，最后完全清晰了，而且比刚才更……"
+      "text": "太阳氦闪爆发，主角目睹强光从太阳方向迸发。"
     },
     {
       "order": 102,
-      "text": "太阳最后一次把它的光和热洒向地球"
+      "text": "太阳氦闪爆发，主角目睹强光从太阳方向迸发。"
     },
     {
       "order": 103,
-      "text": "在太阳的位置上出现了一个暗红色球体，它的体积慢慢膨胀，最后从这里看它，已达到了在地球轨道上看到的太阳大小，那么它的实际体……"
+      "text": "太阳氦闪爆发，主角目睹太阳变为红巨星。"
     }
   ],
-  "backdrop": "@1 我没见过黑夜，我没见过星星，我没见过春天、秋天和冬天；@2 地球自转刹车用了四十二年，比联合政府的计划长了三年；@3 黄昏并不意味着昏暗，地球发动机把整个北半球照得通明；@4 从我住的地方，可以看到几百台发动机喷出的等离子体光柱；@5 比这景象更可怕的是发动机带来的酷热，户外气温高达七八十摄氏度，必须穿冷却服才能外出；@6 但对于我们这一代在北半球出生的人来说，这一切都很自然，就如同对于刹车；@22 “这连你们自己也不相信；@23 人类的逃亡分为五步：第一步，用地球发动机使地球停止转动，使发动机喷口固定在地球运行的反方向；第二步，全功率开动地球发动机……；@24 我们的船继续航行，到了地",
+  "backdrop": "刹车时代结束，地球停转，主角在漫长日落中出生。地球发动机建于亚美大陆，光柱烤热雨点烫伤爷爷。主角随师环球旅行，近观太行山发动机高过珠峰，登“华北794号山”至6000米进料口，顶峰向小星老师道死亡谜语。小星老师带学生看日出，众人恐惧，太阳升起时主角忆谜语。飞船派与地球派冲突再起，小星老师以阿东生态球证其失败。；小星老师以生态球证地球系统不可替代；主角讲述2500年移民五阶段。地球启航，爷爷去世，班级迁入地下城。父亲在远日点海边宣布爱上小星老师而离开；母亲转述钱德勒博士氦聚集加速之忧。灵儿与阿东赴地面后失踪。地球掠过近日点，亚洲发动机停转。岩浆渗入地下城，主角撤离，母亲遇难。主角冰橇穿越太平洋，",
   "backdrop_buffer": []
 }

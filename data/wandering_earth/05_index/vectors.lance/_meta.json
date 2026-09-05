@@ -3,7 +3,7 @@
   "model": "D:\\models\\BAAI\\bge-m3",
   "dimension": 1024,
   "source_file": "units_extracted.jsonl",
-  "source_sha256": "7b0833bad883d897b3fe0a0a278b812b2f126cb2f2fc46bc5dca0f5e6ce47bec",
+  "source_sha256": "30196aab51d91b5c5b564517d6e3f32933bbf9cc4edcf23dd230cc7a19c83c6b",
   "unit_count": 108,
   "table": "story_units"
 }

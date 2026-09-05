@@ -1,0 +1,13 @@
+{
+  "compress_max_tokens": 300,
+  "extract_max_tokens": 1200,
+  "extractor": "llm",
+  "max_attempts": 2,
+  "model": "deepseek-v4-flash",
+  "multi_task": true,
+  "prompt_version": "extract-v0.2-stateful",
+  "provider_base_url": "https://api.deepseek.com",
+  "review": false,
+  "state_schema_version": "story-state@0.2",
+  "temperature": 0.2
+}
