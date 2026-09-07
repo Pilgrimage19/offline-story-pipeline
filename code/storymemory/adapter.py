@@ -41,6 +41,7 @@ class StoryMemory:
         self.retrieval = retrieval
         self._units_cache: dict[str, list[StoryUnit]] = {}
         self._embedders: dict[str, SentenceTransformerEmbedder] = {}
+        self.last_search_diagnostics: dict[str, object] | None = None
 
     # ---------- 数据读取 ----------
 
@@ -81,6 +82,37 @@ class StoryMemory:
             })
         return out
 
+    def get_reading_locations(self, work_id: str) -> dict:
+        """返回可直接给读者选择的章节位置，不泄露章节摘要或未来剧情。"""
+        units = sorted(self._load_units(work_id), key=lambda unit: unit.order)
+        source = self._units_file(work_id)
+        locations: list[dict] = []
+        for unit in units:
+            key = (unit.chapter_idx, unit.chapter_name)
+            if not locations or locations[-1]["_key"] != key:
+                locations.append({
+                    "_key": key,
+                    "location_id": f"chapter-{unit.chapter_idx:02d}",
+                    "label": unit.chapter_name or f"第 {unit.chapter_idx} 章",
+                    "kind": "chapter",
+                    "start_order": unit.order,
+                    "end_order": unit.order,
+                    "start_line": unit.start_line,
+                    "end_line": unit.end_line,
+                    "unit_count": 1,
+                })
+            else:
+                location = locations[-1]
+                location["end_order"] = unit.order
+                location["end_line"] = unit.end_line
+                location["unit_count"] += 1
+        for location in locations:
+            location.pop("_key")
+        return {
+            "work_id": work_id,
+            "source_version": source_sha256(source) if source else None,
+            "locations": locations,
+        }
     def search(
         self,
         work_id: str,
@@ -90,35 +122,75 @@ class StoryMemory:
         top_k: int = 8,
         filters: Optional[dict] = None,
     ) -> list[dict]:
-        """在给定作品内检索，返回统一 Evidence 列表。
-
-        max_order : 只返回 order <= max_order 的单元（防剧透在检索层完成）；
-        filters   : V0 支持 {"chapter": str}（按章节名包含过滤），其余键忽略。
-        """
+        """在给定作品内检索，返回统一 Evidence 列表，并记录本次检索诊断。"""
         filters = filters or {}
         chapter_filter = str(filters.get("chapter", "")).strip()
         units = self._load_units(work_id)
+        source = self._units_file(work_id)
+        source_version = source_sha256(source) if source else None
         if not units:
+            self.last_search_diagnostics = {
+                "requested_retrieval": self.retrieval,
+                "used_retrieval": "none",
+                "fallback_reason": "work_not_found_or_empty",
+                "eligible_unit_count": 0,
+                "result_candidate_count": 0,
+                "source_version": source_version,
+            }
             return []
 
+        eligible_unit_count = sum(
+            1 for unit in units
+            if (max_order is None or unit.order <= max_order)
+            and (not chapter_filter or chapter_filter in unit.chapter_name)
+        )
         by_id = {u.unit_id: u for u in units}
         rows = None
+        used_retrieval = ""
+        fallback_reason: str | None = None
         if self.retrieval in {"auto", "vector"}:
             rows = self._vector_rank(work_id, query, max_order, chapter_filter)
-            if rows is None and self.retrieval == "vector":
-                raise RuntimeError(
-                    "向量索引不可用、已陈旧或本地 embedding 模型无法加载；"
-                    "请重新运行 vector-index，或改用 retrieval='auto'"
-                )
+            if rows is not None:
+                used_retrieval = "vector"
+            elif self.retrieval == "vector":
+                self.last_search_diagnostics = {
+                    "requested_retrieval": self.retrieval,
+                    "used_retrieval": "none",
+                    "fallback_reason": "vector_unavailable_or_stale",
+                    "eligible_unit_count": eligible_unit_count,
+                    "result_candidate_count": 0,
+                    "source_version": source_version,
+                }
+                raise RuntimeError("向量索引不可用、已陈旧或本地 embedding 模型无法加载；请重新运行 vector-index，或改用 retrieval='auto'")
+            else:
+                fallback_reason = "vector_unavailable_or_stale"
         if rows is None and self.retrieval in {"auto", "fts"}:
             rows = self._fts_rank(work_id, query, max_order, chapter_filter)
+            if rows is not None:
+                used_retrieval = "fts"
+            elif self.retrieval == "auto":
+                fallback_reason = "vector_then_fts_unavailable_or_no_match"
+            else:
+                fallback_reason = "fts_unavailable_or_no_match"
         if rows is not None:
             scored = [(by_id[uid], float(score)) for uid, score in rows if uid in by_id]
         else:
             scored = self._scan_rank(units, query, max_order, chapter_filter)
-
+            used_retrieval = "scan"
+        self.last_search_diagnostics = {
+            "requested_retrieval": self.retrieval,
+            "used_retrieval": used_retrieval,
+            "fallback_reason": fallback_reason,
+            "eligible_unit_count": eligible_unit_count,
+            "result_candidate_count": len(scored),
+            "source_version": source_version,
+        }
         return [self._to_evidence(u, s).to_dict() for u, s in scored[: max(0, top_k)]]
 
+    def search_with_diagnostics(self, *args, **kwargs) -> dict:
+        """返回证据与本次检索诊断；仅面向日志、测试和运维。"""
+        evidence = self.search(*args, **kwargs)
+        return {"evidence": evidence, "diagnostics": dict(self.last_search_diagnostics or {})}
     def get_unit(self, work_id: str, unit_id: str) -> Optional[dict]:
         """按稳定 unit_id 取回单个单元（Evidence 形状，score=1.0 占位）。"""
         for u in self._load_units(work_id):
