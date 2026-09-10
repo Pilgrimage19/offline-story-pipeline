@@ -198,6 +198,64 @@ class StoryMemory:
                 return self._to_evidence(u, 1.0).to_dict()
         return None
 
+    def get_recap(self, work_id: str, *, max_order: int, recent_limit: int = 5) -> dict:
+        """返回已读边界的渐进叙事视野；recent 的重叠是有意保留的。"""
+        units = [unit for unit in self._load_units(work_id) if unit.order <= max_order]
+        if not units:
+            return {"work_id": work_id, "max_order": max_order, "snapshot_order": None, "backdrop": "", "recent": []}
+        unit = units[-1]
+        snapshot = unit.state_snapshot if isinstance(unit.state_snapshot, dict) else {}
+        recent = snapshot.get("recent", [])
+        return {
+            "work_id": work_id,
+            "max_order": max_order,
+            "snapshot_order": unit.order,
+            "backdrop": str(snapshot.get("backdrop", "")),
+            "recent": list(recent)[-max(0, recent_limit):],
+        }
+
+    def get_entity_context(self, work_id: str, name: str, *, max_order: int) -> dict:
+        """返回实体在已读范围内的更新序列和当前位置，不以最终状态替代历史。"""
+        query = name.strip()
+        units = [unit for unit in self._load_units(work_id) if unit.order <= max_order]
+        history = []
+        for unit in units:
+            for update in unit.entity_updates:
+                entity_name = str(update.get("name", ""))
+                if query and (query in entity_name or entity_name in query):
+                    history.append({"order": unit.order, "unit_id": unit.unit_id, "update": update})
+        current = None
+        if units:
+            snapshot = units[-1].state_snapshot if isinstance(units[-1].state_snapshot, dict) else {}
+            for group in ("characters", "objects", "locations"):
+                for entity in snapshot.get(group, []):
+                    entity_name = str(entity.get("name", ""))
+                    if query and (query in entity_name or entity_name in query):
+                        current = {"group": group, **entity}
+                        break
+                if current:
+                    break
+        return {"work_id": work_id, "max_order": max_order, "query": query, "history": history, "current": current}
+
+    def get_plotline_context(self, work_id: str, title: str, *, max_order: int) -> dict:
+        """返回情节线的已读更新序列和当前位置。"""
+        query = title.strip()
+        units = [unit for unit in self._load_units(work_id) if unit.order <= max_order]
+        history = []
+        for unit in units:
+            for update in unit.plotline_updates:
+                line_title = str(update.get("title", ""))
+                if query and (query in line_title or line_title in query):
+                    history.append({"order": unit.order, "unit_id": unit.unit_id, "update": update})
+        current = None
+        if units:
+            snapshot = units[-1].state_snapshot if isinstance(units[-1].state_snapshot, dict) else {}
+            for plotline in snapshot.get("plotlines", []):
+                line_title = str(plotline.get("title", ""))
+                if query and (query in line_title or line_title in query):
+                    current = plotline
+                    break
+        return {"work_id": work_id, "max_order": max_order, "query": query, "history": history, "current": current}
     # ---------- 内部实现 ----------
 
     def _vector_rank(
