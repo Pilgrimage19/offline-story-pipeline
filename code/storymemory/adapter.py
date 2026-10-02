@@ -334,6 +334,13 @@ class StoryMemory:
             return None
 
     def _to_evidence(self, u: StoryUnit, score: float) -> StoryEvidence:
+        # 可选名称导航；兼容抽取器的字符串／entity 对象，不推断引用边。
+        references = []
+        if isinstance(u.context_refs, list):
+            for reference in u.context_refs:
+                name = reference.get("entity") if isinstance(reference, dict) else reference
+                if isinstance(name, str) and name.strip() and name.strip() not in references:
+                    references.append(name.strip())
         return StoryEvidence(
             work_id=u.work_id,
             unit_id=u.unit_id,
@@ -349,6 +356,7 @@ class StoryMemory:
                 "characters": u.characters,
                 "locations": u.locations,
                 "key_terms": u.key_terms,
+                **({"context_refs": references} if references else {}),
             },
         )
 

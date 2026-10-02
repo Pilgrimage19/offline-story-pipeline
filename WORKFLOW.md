@@ -4,6 +4,14 @@
 
 ## 1. 总览
 
+### 2026-10-03：证据名称导航线索
+
+Adapter `_to_evidence` 将有效 `context_refs` 带入可选的 `Evidence.metadata.context_refs`。接受名称字符串及旧格式 entity 对象，去空白、去重；空值／无效项忽略，不修改源对象。检索及按 ID 读取共用这一包装，原 max_order 过滤不变。
+
+这是在线接口扩展，不新增离线阶段，不需要重抽取或重建 FTS5／LanceDB。名称只能作为实体查询候选，未命中可转普通事实检索；它不是情节线标题保证、unit 引用边或因果关系。结构查询取得真实 unit_id 后再回取证据，不自动遍历全部名称。
+
+定向验证：在 `code` 下运行 `python -m pytest tests/test_evidence_context_refs.py tests/test_adapter_api.py tests/test_structured_memory.py tests/test_progressive_view.py`，本轮 17/17 通过。测试使用合成临时数据，不提交小说原文。
+
 ### 2026-10-03：在线渐进视图
 
 在已有 extract／state 合并产物之上，Adapter 增加 `get_progressive_view(work_id, max_order=...)`，不新增离线阶段或重抽取数据。选择最大 order ≤ 完整已读边界的单元，只返回该单元有效快照；缺失、degraded 或显式顺序异常返回无快照，不回退旧快照或最终状态。StoryPal 自行预算投影、融合读者讨论；管线不保存用户理解或进度。
