@@ -4,6 +4,14 @@
 
 ## 1. 总览
 
+### 2026-10-03：在线渐进视图
+
+在已有 extract／state 合并产物之上，Adapter 增加 `get_progressive_view(work_id, max_order=...)`，不新增离线阶段或重抽取数据。选择最大 order ≤ 完整已读边界的单元，只返回该单元有效快照；缺失、degraded 或显式顺序异常返回无快照，不回退旧快照或最终状态。StoryPal 自行预算投影、融合读者讨论；管线不保存用户理解或进度。
+
+读取前检查源 path／mtime_ns／size，变化时重载并更新 SHA-256，避免“新哈希配旧内容”。检查加载期间的来源变动，变动时报错允许调用方重试。该缓存不是文件监听，假设正常文件更新会改变 stat。
+
+验证新增 `code/tests/test_progressive_view.py`，继续保留旧结构查询回归；公开代码／文档不包含 data。StoryPal 对本地《流浪地球》108 边界进行了结构检查，不等同于语义正确性证明。
+
 ```text
 原始小说文本
   → normalize（统一 UTF-8、保留原始行号）

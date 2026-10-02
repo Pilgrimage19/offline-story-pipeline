@@ -4,6 +4,14 @@
 
 ## 1. 当前作品与处理状态
 
+### 在线快照接口（2026-10-03）
+
+`get_progressive_view(work_id, max_order=...)` 返回 `work_id`、`max_order`、`source_version`、`snapshot_order`、`status`、`reason`、`snapshot`、`provenance`。`status=ok` 才有深拷贝快照；无完整已读单元为 unavailable，无有效快照为 invalid。消费者不得把 invalid 当作开放边界许可。
+
+snapshot 保留人物／对象／地点、情节线、recent、backdrop_buffer 与 backdrop 原结构；调用方决定预算，不在 Adapter 内生成新摘要。provenance 的 order_range 表示快照累计范围；unit_id 和 snapshot_line_range 只标快照锚点，不能视作每一条背景断言的精确原文引文。source_version 标识实际加载的事实源。
+
+接口校验身份、已知分组结构和显式顺序字段，不能证明文本内容中没有隐性未来信息；重要争议仍须回原文查证。原有 recap／entity／plotline 不变，原文与索引无需重建。
+
 当前已完整处理《流浪地球》：`work_id=wandering_earth`。
 
 - 正文：23,236 个规范化字符；

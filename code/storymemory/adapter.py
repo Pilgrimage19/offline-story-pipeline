@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import sqlite3
+from copy import deepcopy
 from pathlib import Path
 from typing import Optional
 
@@ -31,6 +32,7 @@ from storypipe.vector_index import (
 )
 
 from .evidence import StoryEvidence
+from .progressive import validate_snapshot
 
 
 class StoryMemory:
@@ -40,6 +42,8 @@ class StoryMemory:
         self.data_root = Path(data_root)
         self.retrieval = retrieval
         self._units_cache: dict[str, list[StoryUnit]] = {}
+        self._units_signatures: dict[str, tuple | None] = {}
+        self._units_versions: dict[str, str | None] = {}
         self._embedders: dict[str, SentenceTransformerEmbedder] = {}
         self.last_search_diagnostics: dict[str, object] | None = None
 
@@ -54,10 +58,48 @@ class StoryMemory:
         return None
 
     def _load_units(self, work_id: str) -> list[StoryUnit]:
-        if work_id not in self._units_cache:
-            f = self._units_file(work_id)
-            self._units_cache[work_id] = load_units(f) if f else []
+        f = self._units_file(work_id)
+        stat = f.stat() if f else None
+        signature = (str(f.resolve()), stat.st_mtime_ns, stat.st_size) if stat else None
+        if work_id not in self._units_cache or self._units_signatures.get(work_id) != signature:
+            version = source_sha256(f) if f else None
+            units = load_units(f) if f else []
+            if f:
+                after = f.stat()
+                if (after.st_mtime_ns, after.st_size) != (stat.st_mtime_ns, stat.st_size) or source_sha256(f) != version:
+                    raise OSError("故事事实源在读取期间发生变化，请重试")
+            self._units_cache[work_id] = units
+            self._units_signatures[work_id] = signature
+            self._units_versions[work_id] = version
         return self._units_cache[work_id]
+
+    def get_progressive_view(self, work_id: str, *, max_order: int) -> dict:
+        """返回最近已完整读完单元的快照；无有效快照时不回退到未来或更旧状态。"""
+        if type(max_order) is not int or max_order < 0:
+            raise ValueError("max_order 必须是非负整数")
+        units = self._load_units(work_id)
+        visible = [unit for unit in units if unit.work_id == work_id and 0 < unit.order <= max_order]
+        unit = max(visible, key=lambda item: item.order) if visible else None
+        result = {
+            "work_id": work_id, "max_order": max_order,
+            "source_version": self._units_versions.get(work_id),
+            "snapshot_order": unit.order if unit else None,
+            "status": "unavailable", "reason": "no_completed_unit",
+            "snapshot": None, "provenance": None,
+        }
+        if unit is None:
+            return result
+        reason = "degraded_snapshot" if unit.degraded else validate_snapshot(unit.state_snapshot, work_id, unit.order)
+        if reason:
+            result.update(status="invalid", reason=reason)
+            return result
+        result.update(
+            status="ok", reason=None, snapshot=deepcopy(unit.state_snapshot),
+            provenance={"kind": "progressive_snapshot", "unit_id": unit.unit_id,
+                        "order_range": [1, unit.order], "chapter": unit.chapter_name,
+                        "snapshot_line_range": [unit.start_line, unit.end_line]},
+        )
+        return result
 
     # ---------- 冻结接口 ----------
 
